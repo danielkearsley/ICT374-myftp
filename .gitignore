@@ -1,2 +1,6 @@
 # Object files
 *.o
+
+#exe files
+myftpd/myftpd
+myftp/myftp
