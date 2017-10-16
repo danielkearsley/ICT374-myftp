@@ -11,6 +11,7 @@
 int main(int argc, char* argv[]){
 
 	printf("hello from server, myftpd\n");
+
 	exit(0);
 
 }
