@@ -96,7 +96,7 @@ Clem and Daniel
 
 	key:
 		-> client sends packet to server
-		<- server sends packet to server
+		<- server sends packet to client
 
 	WRQ:
 		->WRQ
