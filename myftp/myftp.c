@@ -6,13 +6,13 @@
  *
  * CHANGELOG:
  * CLEM 16/10: Initialised 'hello world' main.
- * CLEM 28/10: Created client sends hard coded packets and displays the return value from server.
- *
+ * CLEM 28/10: Created client boiler plate, sets up connection but does nothing.
  *
  *
  *
  *
  */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -109,15 +109,15 @@ void display_help()
 
 
 #define MAX_BLOCK_SIZE 64
+#define SERV_TCP_PORT   40007   /* default server listening port */
 
-
-int main(int argc, char* argv[]){
-
+int main(int argc, char* argv[])
+{
+	int sd, n, nr, nw, i=0;
 	char buf[MAX_BLOCK_SIZE], host[60];
 	unsigned short port;
 	struct sockaddr_in ser_addr;
 	struct hostent *hp;
-
 
 	/* get server host name and port number */
 	if (argc==1) {
@@ -130,12 +130,12 @@ int main(int argc, char* argv[]){
 	} else if (argc == 3) { // use given host and port for server
 		strcpy(host, argv[1]);
 		int n = atoi(argv[2]);
-	if (n >= 1024 && n < 65536){
-		port = n;
-	}	else {
-		printf("Error: server port number must be between 1024 and 65535\n");
-		exit(1);
-	}
+		if (n >= 1024 && n < 65536){
+			port = n;
+		}	else {
+			printf("Error: server port number must be between 1024 and 65535\n");
+			exit(1);
+		}
 	} else {
 		printf("Usage: %s [ <server host name> [ <server listening port> ] ]\n", argv[0]);
 		exit(1);
@@ -176,49 +176,27 @@ int main(int argc, char* argv[]){
 		// change buf to first token / command from command.h
 		if(strcmp(buf,PUT)==0){
 				send_put();
-		}else if(strcmp(buf,)==0){
+		}else if(strcmp(buf,GET)==0){
 				send_get();
-		}else if(strcmp(buf,)==0){
+		}else if(strcmp(buf,PWD)==0){
 				send_pwd();
-		}else if(strcmp(buf,)==0){
+		}else if(strcmp(buf,LPWD)==0){
 				display_lpwd();
-		}else if(strcmp(buf,)==0){
+		}else if(strcmp(buf,DIR)==0){
 				send_dir();
-		}else if(strcmp(buf,)==0){
+		}else if(strcmp(buf,LDIR)==0){
 				display_ldir();
-		}else if(strcmp(buf,)==0){
+		}else if(strcmp(buf,CD)==0){
 				send_cd();
-		}else if(strcmp(buf,)==0){
+		}else if(strcmp(buf,LCD)==0){
 				display_lcd();
-		}else if(strcmp(buf,)==0){
-				send_quit();
-		}else{
-				perror("undefined command, type 'help' for help");
-		}
-		switch(buf){
-			case PUT:
-			break;
-			case GET:
-			break;
-			case PWD:
-			break;
-			case LPWD:
-			break;
-			case DIR:
-			break;
-			case LDIR:
-			break;
-			case CD:
-			break;
-			case LCD:
-			break;
-			case QUIT:
-				exit(1);
-			break;
-			case HELP:
+		}else if(strcmp(buf,HELP)==0){
 				display_help();
-			break;
-			default:
+		}else if(strcmp(buf,QUIT)==0){
+				send_quit();
+				exit(0);
+		}else{
+				printf("undefined command, type 'help' for help\n");
 		}
 
 	}

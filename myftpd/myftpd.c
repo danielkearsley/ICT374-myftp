@@ -30,7 +30,6 @@
 
 #define   SERV_TCP_PORT   40007   /* default server listening port */
 
-
 /*
 	Clem 28/10/17
 		Returns the data sent to server.

@@ -8,8 +8,7 @@ Sending file to server
 Client sends one message to the server in the following format:
 
 one byte opcode which is ASCII character P followed by
-two-byte integer value in two's compliment and in network byte order, which
-represents the length of the filename of the file to be sent to the server followed by
+two-byte integer value in two's compliment and in network byte order, which represents the length of the filename of the file to be sent to the server followed by
 the sequence of ASCII characters representing the filename
 
 
@@ -108,7 +107,7 @@ Once the server receives a message with opcode C responds with the following mes
 one byte opcode which is ASCII character C followed by
 one byte acknowledgment code which is one of the following ASCII characters:
 0 - the server cannot find the directory
-2 - the server cannot change directory due to other reasons.
+1 - the server cannot change directory due to other reasons.
 
 
 
