@@ -80,7 +80,7 @@ a sequence of N bytes which is the current directory path in ASCII
 
 
 > dir
-Receive the current directory list of file names
+Receive the current directory list of file names on the server
 
 Client sends one message to the server in the following format:
 
@@ -96,7 +96,7 @@ a sequence of N bytes which is the current directory listing in ASCII
 
 
 > cd
-Change the current directory of the server
+Change the current directory on the server
 
 Client sends one message to the server in the following format:
 
