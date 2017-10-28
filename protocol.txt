@@ -1,0 +1,128 @@
+
+PROTOCOL SPECIFICATION
+
+
+> put <filename>
+Sending file to server
+
+Client sends one message to the server in the following format:
+
+one byte opcode which is ASCII character P followed by
+two-byte integer value in two's compliment and in network byte order, which
+represents the length of the filename of the file to be sent to the server followed by
+the sequence of ASCII characters representing the filename
+
+
+Once the server receives a message with opcode P, it responds with the following message:
+
+one byte opcode which is ASCII character P followed by
+one byte acknowledgment code which is one of the following ASCII characters:
+0 - the server is ready to accept the named file
+1 - the server cannot accept the file as there is a filename clash
+2 - the server cannot accept the file because it cannot create the named file
+3 - the server cannot accept the file due to other reasons.
+
+
+Once the client receives the P message from the server and if the acknowledgment code is 0, it responds by sending the following message:
+
+one byte opcode which is the ASCII character D followed by
+one byte format code which is one of the following ASCII characters:
+0 - the file is in ASCII
+1 - the file is in binary
+four-byte integer, N, in two's compliment and in network byte order which represents the length of the file followed by
+a sequence of N bytes which is the content of the file
+
+
+
+> get <filename>
+Receiving file from server
+
+Client sends one message to the server in the following format:
+
+one byte opcode which is ASCII character G followed by
+two-byte integer value in two's compliment and in network byte order, which represents the length of the filename of the file to be sent from the server followed by
+the sequence of ASCII characters representing the filename
+
+
+Once the server receives a message with opcode G, and no error is encountered it responds with the following message:
+
+one byte opcode which is the ASCII character D followed by
+one byte format code which is one of the following ASCII characters:
+0 - the file is in ASCII
+1 - the file is in binary
+four-byte integer, N, in two's compliment and in network byte order which represents the length of the file followed by
+a sequence of N bytes which is the content of the file
+
+
+Once the server receives a message with opcode G, and an error is encountered it responds with the following message:
+
+one byte opcode which is ASCII character G followed by
+one byte acknowledgment code which is one of the following ASCII characters:
+0 - the server cannot find requested file
+1 - the server cannot send the file due to other reasons.
+
+
+
+> pwd
+Receive the current directory path of the server
+
+Client sends one message to the server in the following format:
+
+one byte opcode which is ASCII character A
+
+
+Once the server receives a message with opcode A it responds with the following message:
+
+one byte opcode which is ASCII character A followed by
+four-byte integer, N, in two's compliment and in network byte order which represents the length of the current directory path followed by
+a sequence of N bytes which is the current directory path in ASCII
+
+
+
+> dir
+Receive the current directory list of file names
+
+Client sends one message to the server in the following format:
+
+one byte opcode which is ASCII character B
+
+
+Once the server receives a message with opcode B responds with the following message:
+
+one byte opcode which is ASCII character B followed by
+four-byte integer, N, in two's compliment and in network byte order which represents the length of the current directory listing followed by
+a sequence of N bytes which is the current directory listing in ASCII
+
+
+
+> cd
+Change the current directory of the server
+
+Client sends one message to the server in the following format:
+
+one byte opcode which is ASCII character C
+
+
+Once the server receives a message with opcode C responds with the following message:
+
+one byte opcode which is ASCII character C followed by
+one byte acknowledgment code which is one of the following ASCII characters:
+0 - the server cannot find the directory
+2 - the server cannot change directory due to other reasons.
+
+
+
+
+
+> quit
+Terminate the session
+
+Client sends one message to the server in the following format:
+
+one byte opcode which is ASCII character Q
+
+
+Once the server receives a message with opcode Q responds with the following message:
+
+one byte opcode which is ASCII character Q
+
