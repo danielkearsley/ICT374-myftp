@@ -25,10 +25,59 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 
+#include <fcntl.h>
+#include <time.h>
+#include <stdarg.h>
+
 #include "stream.h"
 
 
-#define   SERV_TCP_PORT   40007   /* default server listening port */
+// packet opcode constants
+#define put  'P'
+#define get  'G'
+#define pwd  'A'
+#define dir  'B'
+#define cd   'C'
+#define data 'D'
+
+
+
+#define SERV_TCP_PORT   40007   /* default server listening port */
+#define LOGPATH "./myftpd.log"	/* log file */
+
+void logger(char* argformat, ... ){
+	FILE* logfile;
+  if( (logfile = fopen(LOGPATH,"a")) == NULL ){
+    perror("unable to write to log");
+    exit(0);
+  }
+
+	va_list args;
+  time_t timedata;
+  struct tm * timevalue;
+  char timeformat[64];
+  char* loggerformat;
+
+  time(&timedata );
+  timevalue = localtime ( &timedata );
+	asctime_r(timevalue,timeformat); // string representation of time
+	timeformat[strlen(timeformat)-1] = '-';//remove \n
+
+  loggerformat = (char*) malloc((strlen(timeformat) + strlen(argformat) + 2) * sizeof(char) );
+
+  strcpy(loggerformat,timeformat);
+  strcat(loggerformat,argformat);
+  strcat(loggerformat,"\n");
+
+  va_start(args,argformat); // start the va_list after argformat
+	vfprintf(logfile,loggerformat,args);
+	va_end(args); // end the va_list
+
+	free(loggerformat);
+
+	fclose(logfile);
+}
+
 
 /*
 	Clem 28/10/17
@@ -36,20 +85,49 @@
 */
 void serve_a_client(int sd)
 {
-	int nr, nw;
-	char buf[MAX_BLOCK_SIZE];
+	// int nr, nw;
+	// char buf[MAX_BLOCK_SIZE];
+
+	char opcode;
 
 	while (1){
-		/* read data from client */
-		if ((nr = readn(sd, buf, sizeof(buf))) <= 0)
-			return;   /* connection broken down */
+		if( (opcode = read_opcode(sd,&opcode)) <= 0){
+			return; //connection closed
+		}
 
-		/* process data */
-		buf[nr] = '\0';
-		//reverse(buf);
+		switch(opcode){
+			case put:
+				printf("opcode put\n");
+			break;
+			case get:
+				printf("opcode get\n");
+			break;
+			case pwd:
+				printf("opcode pwd\n");
+			break;
+			case dir:
+				printf("opcode dir\n");
+			break;
+			case cd:
+				printf("opcode cd\n");
+			break;
+			case data:
+				printf("opcode data\n");
+			break;
+			default:
+				//invalid :. disregard
+			break;
+		}
 
-		/* send results to client */
-		nw = writen(sd, buf, nr);
+		// /* read data from client */
+		// if ((nr = readn(sd, buf, sizeof(buf))) <= 0)
+		// 	return;    connection broken down
+
+		// /* process data */
+		// buf[nr] = '\0';
+
+		// /* send results to client */
+		// nw = writen(sd, buf, nr);
 	}
 }
 
@@ -66,19 +144,24 @@ void claim_children()
 
 void daemon_init(void)
 {
-	pid_t   pid;
+	pid_t pid;
 	struct sigaction act;
 
 	if ( (pid = fork()) < 0) {
 		perror("fork"); exit(1);
 	} else if (pid > 0) {
+		/* parent */
 		printf("myftpd PID: %d\n", pid);
 		exit(0);
 	}else{
-
-		/* child continues */
+		logger("server initialised");
+		/* child */
 		setsid();		/* become session leader */
-		chdir("/");	/* change working directory */
+		char current_dir[128];
+		getcwd(current_dir,sizeof(current_dir));
+		chdir(current_dir);	/* change working directory */
+		logger("dir set to %s",current_dir);
+
 		umask(0);		/* clear file mode creation mask */
 
 		/* catch SIGCHLD to remove zombies from system */
@@ -92,11 +175,12 @@ void daemon_init(void)
 
 int main(int argc, char* argv[])
 {
-	int sd, nsd, n;
+	int sd, nsd;
 	pid_t pid;
 	unsigned short port;   // server listening port
 	socklen_t cli_addrlen;
 	struct sockaddr_in ser_addr, cli_addr;
+
 
 	/* get the port number */
 	if (argc == 1) {
@@ -114,10 +198,10 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
-
 	// make the server a daemon.
 	daemon_init();
 
+	logger("listening on port %hu",port);
 
 	/* set up listening socket sd */
 	if ((sd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
@@ -137,7 +221,6 @@ int main(int argc, char* argv[])
 
 	/* become a listening socket */
 	listen(sd, 5);
-
 
 
 	while (1) {

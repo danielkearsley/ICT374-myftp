@@ -9,6 +9,23 @@
 
 #include <unistd.h>
 
+
+int read_opcode(int fd,char *opcode)
+{
+	short data;
+	char code;
+
+	// read 1 byte opcode from socket
+	if(read(fd,&data,1) != 1)
+		return -1; // read failed
+	// convert to host byte order
+	code = (char) ntohs(data);
+	opcode = &code;
+	// return success;
+	return 1;
+}
+
+
 int readn(int fd, char *buf, int bufsize)
 {
     short data_size;    /* sizeof (short) must be 2 */
