@@ -201,7 +201,6 @@ int main(int argc, char* argv[])
 	// make the server a daemon.
 	daemon_init();
 
-	logger("listening on port %hu",port);
 
 	/* set up listening socket sd */
 	if ((sd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
@@ -221,6 +220,7 @@ int main(int argc, char* argv[])
 
 	/* become a listening socket */
 	listen(sd, 5);
+	logger("listening on port %hu",port);
 
 
 	while (1) {

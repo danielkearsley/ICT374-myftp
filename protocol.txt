@@ -100,6 +100,8 @@ Change the current directory on the server
 Client sends one message to the server in the following format:
 
 one byte opcode which is ASCII character C
+two-byte integer value in two's compliment and in network byte order, which represents the length of the directory name to change to
+the sequence of ASCII characters representing the directory name
 
 
 Once the server receives a message with opcode C responds with the following message:
