@@ -22,6 +22,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include "stream.h"
 
 
 // client commands available
@@ -42,22 +45,40 @@
 #define OP_PWD  'A'
 #define OP_DIR  'B'
 #define OP_CD   'C'
+#define OP_DATA 'D'
+
+// ack codes for OP_PUT
+#define ACK_PUT_SUCCESS '0'
+#define ACK_PUT_FILENAME '1'
+#define ACK_PUT_CREATEFILE '2'
+#define ACK_PUT_OTHER '3'
+
+// ack codes for OP_GET
+#define ACK_GET_FIND '0'
+#define ACK_GET_OTHER '1'
+
+// ack codes for OP_DATA
+#define ACK_DATA_ASCII '0'
+#define ACK_DATA_BIN '1'
+
+// ack codes for OP_CD
+#define ACK_CD_FIND '0'
+#define ACK_CD_OTHER '1'
 
 
-/* temp debug function, prints char* response from server */
+/* temp debug function, prints response from server */
 void response(int sd){
-	char opcode;
-	if( read_opcode(sd,&opcode) <= 0){
+	char code;
+	if( read_code(sd,&code) <= 0){
 		printf("read failed\n");
 		return; //connection closed
 	}
-	printf("Sever Output: %c\n",  opcode);
+	printf("Sever Output: %c\n",  code);
 }
-
 
 void send_put(int sd)
 {
-	if( write_opcode(sd,OP_PUT) == -1){
+	if( write_code(sd,OP_PUT) == -1){
 		printf("failed to send put\n");
 	}
 	response(sd);
@@ -65,7 +86,7 @@ void send_put(int sd)
 
 void send_get(int sd)
 {
-	write_opcode(sd,OP_GET);
+	write_code(sd,OP_GET);
 	response(sd);
 
 
@@ -74,7 +95,7 @@ void send_get(int sd)
 void send_pwd(int sd)
 {
 
-	write_opcode(sd,OP_PWD);
+	write_code(sd,OP_PWD);
 	response(sd);
 
 }
@@ -88,7 +109,7 @@ void display_lpwd()
 void send_dir(int sd)
 {
 
-	write_opcode(sd,OP_DIR);
+	write_code(sd,OP_DIR);
 	response(sd);
 
 }
@@ -102,7 +123,7 @@ void display_ldir()
 
 void send_cd(int sd)
 {
-	write_opcode(sd,OP_CD);
+	write_code(sd,OP_CD);
 	response(sd);
 
 
@@ -137,13 +158,13 @@ void display_help()
 }
 
 
-#define MAX_BLOCK_SIZE 64
+#define MAX_INPUT 64
 #define SERV_TCP_PORT   40007   /* default server listening port */
 
 int main(int argc, char* argv[])
 {
 	int sd, n, nr, nw, i=0;
-	char buf[MAX_BLOCK_SIZE], host[60];
+	char buf[MAX_INPUT], host[60];
 	unsigned short port;
 	struct sockaddr_in ser_addr;
 	struct hostent *hp;

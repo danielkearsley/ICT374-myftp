@@ -73,7 +73,7 @@ one byte opcode which is ASCII character A
 Once the server receives a message with opcode A it responds with the following message:
 
 one byte opcode which is ASCII character A followed by
-four-byte integer, N, in two's compliment and in network byte order which represents the length of the current directory path followed by
+two-byte integer, N, in two's compliment and in network byte order which represents the length of the current directory path followed by
 a sequence of N bytes which is the current directory path in ASCII
 
 
@@ -112,18 +112,4 @@ one byte acknowledgment code which is one of the following ASCII characters:
 1 - the server cannot change directory due to other reasons.
 
 
-
-
-
-> quit
-Terminate the session
-
-Client sends one message to the server in the following format:
-
-one byte opcode which is ASCII character Q
-
-
-Once the server receives a message with opcode Q responds with the following message:
-
-one byte opcode which is ASCII character Q
 

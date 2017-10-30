@@ -33,8 +33,38 @@ int writen(int fd, char *buf, int nbytes);
 
 
 
-int read_opcode(int fd,char *opcode);
+/* Writes a one byte char from opcode to socket fd.
+ * return: -1 : write failed
+ *					1 : write success
+ */
+int write_code(int fd, char code);
+
+/* Reads a one byte char from socket fd to opcode.
+ * return: -1 : read failed
+ *					1 : read success
+ */
+int read_code(int fd,char *code);
 
 
-int write_opcode(int fd, char opcode);
+
+/* Writes a two byte integer from length to socket fd.
+ * return: -1 : write failed
+ *					1 : write success
+ */
+int write_twobytelength(int fd, int length);
+
+int read_twobytefilelength(int fd, int length);
+
+
+/* Writes a four byte integer from length to socket fd.
+ * return: -1 : write failed
+ *					1 : write success
+ */
+int write_fourbytelength(int fd, int length);
+
+int read_fourbytelength(int fd, int length);
+
+
+
+
 

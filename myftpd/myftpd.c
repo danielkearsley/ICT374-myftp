@@ -33,12 +33,30 @@
 
 
 // packet opcode constants
-#define put  'P'
-#define get  'G'
-#define pwd  'A'
-#define dir  'B'
-#define cd   'C'
-#define data 'D'
+#define OP_PUT  'P'
+#define OP_GET  'G'
+#define OP_PWD  'A'
+#define OP_DIR  'B'
+#define OP_CD   'C'
+#define OP_DATA 'D'
+
+// ack codes for OP_PUT
+#define ACK_PUT_SUCCESS '0'
+#define ACK_PUT_FILENAME '1'
+#define ACK_PUT_CREATEFILE '2'
+#define ACK_PUT_OTHER '3'
+
+// ack codes for OP_GET
+#define ACK_GET_FIND '0'
+#define ACK_GET_OTHER '1'
+
+// ack codes for OP_DATA
+#define ACK_DATA_ASCII '0'
+#define ACK_DATA_BIN '1'
+
+// ack codes for OP_CD
+#define ACK_CD_FIND '0'
+#define ACK_CD_OTHER '1'
 
 
 
@@ -97,41 +115,36 @@ void serve_a_client(int sd,int cid)
 
 	char opcode;
 
-	while (1){
-		if( read_opcode(sd,&opcode) <= 0){
-			printf("read failed\n");
-			return; //connection closed
-		}
-		printf("cid:%d\n",cid);
-		logger(cid,"opcode recieved: %c",opcode);
+	while (read_code(sd,&opcode) > 0){
 
 		switch(opcode){
-			case put:
-				logger(cid,"put X");
-				write_opcode(sd,put);
+			case OP_PUT:
+				logger(cid,"PUT");
+				write_code(sd,ACK_PUT_SUCCESS);
+				// write_opcode(sd,OP_PUT);
 			break;
-			case get:
-				logger(cid,"opcode get\n");
-				write_opcode(sd,get);
+			case OP_GET:
+				logger(cid,"GET");
+				write_code(sd,ACK_PUT_SUCCESS);
 			break;
-			case pwd:
-				logger(cid,"opcode pwd\n");
-				write_opcode(sd,pwd);
+			case OP_PWD:
+				logger(cid,"PWD");
+				write_code(sd,ACK_PUT_SUCCESS);
 			break;
-			case dir:
-				logger(cid,"opcode dir\n");
-				write_opcode(sd,dir);
+			case OP_DIR:
+				logger(cid,"DIR");
+				write_code(sd,ACK_PUT_SUCCESS);
 			break;
-			case cd:
-				logger(cid,"opcode cd\n");
-				write_opcode(sd,cd);
+			case OP_CD:
+				logger(cid,"CD");
+				write_code(sd,ACK_PUT_SUCCESS);
 			break;
-			case data:
-				logger(cid,"opcode data\n");
-				write_opcode(sd,data);
+			case OP_DATA:
+				logger(cid,"DATA");
+				write_code(sd,ACK_PUT_SUCCESS);
 			break;
 			default:
-				printf("INVALID OPCODE\n");
+				printf("INVALID OPCODE");
 				//invalid :. disregard
 			break;
 		}
@@ -145,7 +158,9 @@ void serve_a_client(int sd,int cid)
 
 		// /* send results to client */
 		// nw = writen(sd, buf, nr);
-	}
+	}// end while
+	logger(cid,"connection closed");
+	return; //connection closed
 }
 
 
@@ -226,9 +241,9 @@ int main(int argc, char* argv[])
 
 	/* build server Internet socket address */
 	bzero((char *)&ser_addr, sizeof(ser_addr));
-	ser_addr.sin_family = AF_INET;
-	ser_addr.sin_port = htons(port);
-	ser_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	ser_addr.sin_family = AF_INET; // address family
+	ser_addr.sin_port = htons(port); // network ordered port number
+	ser_addr.sin_addr.s_addr = htonl(INADDR_ANY); // any interface
 
 	/* bind server address to socket sd */
 	if (bind(sd, (struct sockaddr *) &ser_addr, sizeof(ser_addr))<0){
@@ -236,9 +251,8 @@ int main(int argc, char* argv[])
 	}
 
 	/* become a listening socket */
-	listen(sd, 5);
-	logger(0,"myftp server listening on port %hu",port);
-
+	listen(sd, 5); // 5 maximum connections can be in queue
+	logger(0,"myftp server now listening on port %hu",port);
 	int cid = 0;
 
 	while (1) {
@@ -249,6 +263,7 @@ int main(int argc, char* argv[])
 			if (errno == EINTR) continue;/* if interrupted by SIGCHLD */
 			perror("server:accept"); exit(1);
 		}
+		// iterate client id.
 		cid++;
 
 		/* create a child process to handle this client */
@@ -260,6 +275,7 @@ int main(int argc, char* argv[])
 		}else{
 			/* now in child, serve the current client */
 			close(sd);
+			logger(cid,"connected");
 			serve_a_client(nsd,cid);
 			exit(0);
 		}

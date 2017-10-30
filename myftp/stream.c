@@ -10,30 +10,6 @@
 #include <unistd.h>
 
 
-int read_opcode(int fd,char* opcode)
-{
-	char data;
-
-	// read 1 byte opcode from socket
-	if(read(fd,(char *) &data,1) != 1)
-		return -1; // read failed
-
-	*opcode = data;
-	printf("opc: %c\n",*opcode);
-	// return success;
-	return 1;
-}
-
-int write_opcode(int fd, char opcode)
-{
-
-	/* send the opcode */
-	if (write(fd, (char*)&opcode, 1) != 1) return (-1);
-
-	//return success
-	return 1;
-}
-
 
 int readn(int fd, char *buf, int bufsize)
 {
@@ -76,4 +52,88 @@ int writen(int fd, char *buf, int nbytes)
              return (nw);    /* write error */
     }
     return (n);
+}
+
+
+int read_code(int fd,char* opcode)
+{
+	char data;
+
+	// read 1 byte opcode from socket
+	if(read(fd,(char *) &data,1) != 1)
+		return -1; // read failed
+	*opcode = data;
+	// return success;
+	return 1;
+}
+
+int write_code(int fd, char opcode)
+{
+
+	/* send the opcode */
+	if (write(fd, (char*)&opcode, 1) != 1) return (-1);
+
+	//return success
+	return 1;
+}
+
+
+
+int read_ack(int fd, int* ackcode)
+{
+	short data;
+	if (write(fd, (char*)&data, 1) != 1) return (-1);
+	data = ntohs(data);
+	*ackcode = (int) data;
+
+	return 1;
+}
+
+
+int write_ack(int fd, int ackcode)
+{
+	short data = ackcode;
+	data = htons(data);
+	if (write(fd, (char*)&data, 1) != 1) return (-1);
+
+	return 1;
+}
+
+
+int write_twobytelength(int fd, int length)
+{
+
+	return 1;
+}
+
+int read_twobytefilelength(int fd, int length)
+{
+
+	return 1;
+}
+
+
+int write_fourbytelength(int fd, int length)
+{
+
+	return 1;
+}
+
+int read_fourbytefilelength(int fd, int length)
+{
+
+	return 1;
+}
+
+
+int write_formatcode(int fd, int formatcode)
+{
+
+	return 1;
+}
+
+int read_formatcode(int fd, int formatcode)
+{
+
+	return 1;
 }
