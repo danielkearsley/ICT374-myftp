@@ -10,18 +10,27 @@
 #include <unistd.h>
 
 
-int read_opcode(int fd,char *opcode)
+int read_opcode(int fd,char* opcode)
 {
-	short data;
-	char code;
+	char data;
 
 	// read 1 byte opcode from socket
-	if(read(fd,&data,1) != 1)
+	if(read(fd,(char *) &data,1) != 1)
 		return -1; // read failed
-	// convert to host byte order
-	code = (char) ntohs(data);
-	opcode = &code;
+
+	*opcode = data;
+	printf("opc: %c\n",*opcode);
 	// return success;
+	return 1;
+}
+
+int write_opcode(int fd, char opcode)
+{
+
+	/* send the opcode */
+	if (write(fd, (char*)&opcode, 1) != 1) return (-1);
+
+	//return success
 	return 1;
 }
 

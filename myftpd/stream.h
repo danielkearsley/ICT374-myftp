@@ -34,3 +34,7 @@ int writen(int fd, char *buf, int nbytes);
 
 
 int read_opcode(int fd,char *opcode);
+
+
+int write_opcode(int fd, char opcode);
+

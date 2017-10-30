@@ -9,6 +9,32 @@
 
 #include <unistd.h>
 
+
+int read_opcode(int fd,char* opcode)
+{
+	char data;
+
+	// read 1 byte opcode from socket
+	if(read(fd,(char *) &data,1) != 1)
+		return -1; // read failed
+
+	*opcode = data;
+	printf("opc: %c\n",*opcode);
+	// return success;
+	return 1;
+}
+
+int write_opcode(int fd, char opcode)
+{
+
+	/* send the opcode */
+	if (write(fd, (char*)&opcode, 1) != 1) return (-1);
+
+	//return success
+	return 1;
+}
+
+
 int readn(int fd, char *buf, int bufsize)
 {
     short data_size;    /* sizeof (short) must be 2 */

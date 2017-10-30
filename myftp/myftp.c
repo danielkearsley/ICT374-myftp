@@ -36,59 +36,88 @@
 #define QUIT "quit"
 #define HELP "help"
 
+// opcodes
+#define OP_PUT  'P'
+#define OP_GET  'G'
+#define OP_PWD  'A'
+#define OP_DIR  'B'
+#define OP_CD   'C'
 
 
-void send_put()
+/* temp debug function, prints char* response from server */
+void response(int sd){
+	char opcode;
+	if( read_opcode(sd,&opcode) <= 0){
+		printf("read failed\n");
+		return; //connection closed
+	}
+	printf("Sever Output: %c\n",  opcode);
+}
+
+
+void send_put(int sd)
 {
+	if( write_opcode(sd,OP_PUT) == -1){
+		printf("failed to send put\n");
+	}
+	response(sd);
+}
+
+void send_get(int sd)
+{
+	write_opcode(sd,OP_GET);
+	response(sd);
 
 
 }
 
-void send_get()
+void send_pwd(int sd)
 {
 
-
-}
-
-void send_pwd()
-{
-
+	write_opcode(sd,OP_PWD);
+	response(sd);
 
 }
 
 void display_lpwd()
 {
-
+	printf("display local pwd\n");
 
 }
 
-void send_dir()
+void send_dir(int sd)
 {
 
+	write_opcode(sd,OP_DIR);
+	response(sd);
 
 }
 
 void display_ldir()
 {
+	printf("display local dir list\n");
 
 
 }
 
-void send_cd()
+void send_cd(int sd)
 {
+	write_opcode(sd,OP_CD);
+	response(sd);
 
 
 }
 
 void display_lcd()
 {
+	printf("change local dir\n");
 
 
 }
 
 void send_quit()
 {
-
+	printf("just quit\n");
 
 }
 
@@ -175,19 +204,19 @@ int main(int argc, char* argv[])
 
 		// change buf to first token / command from command.h
 		if(strcmp(buf,PUT)==0){
-				send_put();
+				send_put(sd);
 		}else if(strcmp(buf,GET)==0){
-				send_get();
+				send_get(sd);
 		}else if(strcmp(buf,PWD)==0){
-				send_pwd();
+				send_pwd(sd);
 		}else if(strcmp(buf,LPWD)==0){
 				display_lpwd();
 		}else if(strcmp(buf,DIR)==0){
-				send_dir();
+				send_dir(sd);
 		}else if(strcmp(buf,LDIR)==0){
 				display_ldir();
 		}else if(strcmp(buf,CD)==0){
-				send_cd();
+				send_cd(sd);
 		}else if(strcmp(buf,LCD)==0){
 				display_lcd();
 		}else if(strcmp(buf,HELP)==0){

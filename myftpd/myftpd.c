@@ -91,30 +91,39 @@ void serve_a_client(int sd)
 	char opcode;
 
 	while (1){
-		if( (opcode = read_opcode(sd,&opcode)) <= 0){
+		if( read_opcode(sd,&opcode) <= 0){
+			printf("read failed\n");
 			return; //connection closed
 		}
+		logger("opcode recieved: %c",opcode);
 
 		switch(opcode){
 			case put:
-				printf("opcode put\n");
+				logger("put X");
+				write_opcode(sd,put);
 			break;
 			case get:
-				printf("opcode get\n");
+				logger("opcode get\n");
+				write_opcode(sd,get);
 			break;
 			case pwd:
-				printf("opcode pwd\n");
+				logger("opcode pwd\n");
+				write_opcode(sd,pwd);
 			break;
 			case dir:
-				printf("opcode dir\n");
+				logger("opcode dir\n");
+				write_opcode(sd,dir);
 			break;
 			case cd:
-				printf("opcode cd\n");
+				logger("opcode cd\n");
+				write_opcode(sd,cd);
 			break;
 			case data:
-				printf("opcode data\n");
+				logger("opcode data\n");
+				write_opcode(sd,data);
 			break;
 			default:
+				printf("INVALID OPCODE\n");
 				//invalid :. disregard
 			break;
 		}
