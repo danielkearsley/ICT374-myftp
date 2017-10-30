@@ -45,7 +45,7 @@
 #define SERV_TCP_PORT   40007   /* default server listening port */
 #define LOGPATH "./myftpd.log"	/* log file */
 
-void logger(char* argformat, ... ){
+void logger(int cid, char* argformat, ... ){
 	FILE* logfile;
   if( (logfile = fopen(LOGPATH,"a")) == NULL ){
     perror("unable to write to log");
@@ -57,15 +57,22 @@ void logger(char* argformat, ... ){
   struct tm * timevalue;
   char timeformat[64];
   char* loggerformat;
+  char* cidformat = "client %d-";
+  char cidstring[64];
 
   time(&timedata );
   timevalue = localtime ( &timedata );
 	asctime_r(timevalue,timeformat); // string representation of time
 	timeformat[strlen(timeformat)-1] = '-';//remove \n
 
-  loggerformat = (char*) malloc((strlen(timeformat) + strlen(argformat) + 2) * sizeof(char) );
+	if(cid != 0){
+ 		sprintf(cidstring,cidformat,cid);
+	}
+
+  loggerformat = (char*) malloc((strlen(timeformat) + strlen(cidstring) + strlen(argformat) + 2) * sizeof(char) );
 
   strcpy(loggerformat,timeformat);
+  strcat(loggerformat,cidstring);
   strcat(loggerformat,argformat);
   strcat(loggerformat,"\n");
 
@@ -83,7 +90,7 @@ void logger(char* argformat, ... ){
 	Clem 28/10/17
 		Returns the data sent to server.
 */
-void serve_a_client(int sd)
+void serve_a_client(int sd,int cid)
 {
 	// int nr, nw;
 	// char buf[MAX_BLOCK_SIZE];
@@ -95,31 +102,32 @@ void serve_a_client(int sd)
 			printf("read failed\n");
 			return; //connection closed
 		}
-		logger("opcode recieved: %c",opcode);
+		printf("cid:%d\n",cid);
+		logger(cid,"opcode recieved: %c",opcode);
 
 		switch(opcode){
 			case put:
-				logger("put X");
+				logger(cid,"put X");
 				write_opcode(sd,put);
 			break;
 			case get:
-				logger("opcode get\n");
+				logger(cid,"opcode get\n");
 				write_opcode(sd,get);
 			break;
 			case pwd:
-				logger("opcode pwd\n");
+				logger(cid,"opcode pwd\n");
 				write_opcode(sd,pwd);
 			break;
 			case dir:
-				logger("opcode dir\n");
+				logger(cid,"opcode dir\n");
 				write_opcode(sd,dir);
 			break;
 			case cd:
-				logger("opcode cd\n");
+				logger(cid,"opcode cd\n");
 				write_opcode(sd,cd);
 			break;
 			case data:
-				logger("opcode data\n");
+				logger(cid,"opcode data\n");
 				write_opcode(sd,data);
 			break;
 			default:
@@ -163,13 +171,13 @@ void daemon_init(void)
 		printf("myftpd PID: %d\n", pid);
 		exit(0);
 	}else{
-		logger("server initialised");
+		logger(0,"server initialised");
 		/* child */
 		setsid();		/* become session leader */
 		char current_dir[128];
 		getcwd(current_dir,sizeof(current_dir));
 		chdir(current_dir);	/* change working directory */
-		logger("dir set to %s",current_dir);
+		logger(0,"dir set to %s",current_dir);
 
 		umask(0);		/* clear file mode creation mask */
 
@@ -229,8 +237,9 @@ int main(int argc, char* argv[])
 
 	/* become a listening socket */
 	listen(sd, 5);
-	logger("listening on port %hu",port);
+	logger(0,"myftp server listening on port %hu",port);
 
+	int cid = 0;
 
 	while (1) {
 		/* wait to accept a client request for connection */
@@ -240,6 +249,7 @@ int main(int argc, char* argv[])
 			if (errno == EINTR) continue;/* if interrupted by SIGCHLD */
 			perror("server:accept"); exit(1);
 		}
+		cid++;
 
 		/* create a child process to handle this client */
 		if ((pid=fork()) <0) {
@@ -250,7 +260,7 @@ int main(int argc, char* argv[])
 		}else{
 			/* now in child, serve the current client */
 			close(sd);
-			serve_a_client(nsd);
+			serve_a_client(nsd,cid);
 			exit(0);
 		}
 	}
