@@ -30,16 +30,16 @@
 
 
 // client commands available
-#define PUT  "put"
-#define GET  "get"
-#define PWD  "pwd"
-#define LPWD "lpwd"
-#define DIR  "dir"
-#define LDIR "ldir"
-#define CD   "cd"
-#define LCD  "lcd"
-#define QUIT "quit"
-#define HELP "help"
+#define CMD_PUT  "put"
+#define CMD_GET  "get"
+#define CMD_PWD  "pwd"
+#define CMD_LPWD "lpwd"
+#define CMD_DIR  "dir"
+#define CMD_LDIR "ldir"
+#define CMD_CD   "cd"
+#define CMD_LCD  "lcd"
+#define CMD_QUIT "quit"
+#define CMD_HELP "help"
 
 // opcodes
 #define OP_PUT  'P'
@@ -80,10 +80,10 @@ void response(int sd){
 
 void send_put(int sd, char *token)
 {
-	// if(write_code(sd,OP_PUT) == -1){
-	// 	printf("failed to send put");
-	// }
-	// response(sd);
+	if(write_code(sd,OP_PUT) == -1){
+		printf("failed to send put");
+	}
+	printf("sent put\n");
 
 	short length = 100;
 	printf("sending %hd\n",length);
@@ -154,9 +154,10 @@ void display_ldir(char *token)
 	if(token == NULL){
 		token = ".";
 	}
-	FILE *d;
-  	struct dirent *dir;
-  	d = opendir(token);
+	DIR *d;
+	struct dirent *dir;
+
+	d = opendir(token);
 	if (d){
     	while ((dir = readdir(d)) != NULL){
 	      printf("%s\n", dir->d_name);
@@ -203,13 +204,13 @@ void display_help()
 }
 
 
-#define MAX_INPUT 64
+#define MAX_CMD_INPUT 64
 #define SERV_TCP_PORT   40007   /* default server listening port */
 
 int main(int argc, char* argv[])
 {
-	int sd, n, nr, nw, i=0;
-	char buf[MAX_INPUT], host[60];
+	int sd, nr;
+	char buf[MAX_CMD_INPUT], host[60];
 	unsigned short port;
 	struct sockaddr_in ser_addr;
 	struct hostent *hp;
@@ -273,25 +274,25 @@ int main(int argc, char* argv[])
 		tokenise(buf, token);
 
 		// change buf to first token / command from command.h
-		if(strcmp(token[0],PUT)==0){
+		if(strcmp(token[0],CMD_PUT)==0){
 				send_put(sd, token[1]);
-		}else if(strcmp(token[0],GET)==0){
+		}else if(strcmp(token[0],CMD_GET)==0){
 				send_get(sd, token[1]);
-		}else if(strcmp(token[0],PWD)==0){
+		}else if(strcmp(token[0],CMD_PWD)==0){
 				send_pwd(sd, token[0]);
-		}else if(strcmp(token[0],LPWD)==0){
+		}else if(strcmp(token[0],CMD_LPWD)==0){
 				display_lpwd();
-		}else if(strcmp(token[0],DIR)==0){
+		}else if(strcmp(token[0],CMD_DIR)==0){
 				send_dir(sd, token[0]);
-		}else if(strcmp(token[0],LDIR)==0){
+		}else if(strcmp(token[0],CMD_LDIR)==0){
 				display_ldir(token[1]);
-		}else if(strcmp(token[0],CD)==0){
+		}else if(strcmp(token[0],CMD_CD)==0){
 				send_cd(sd, token[1]);
-		}else if(strcmp(token[0],LCD)==0){
+		}else if(strcmp(token[0],CMD_LCD)==0){
 				display_lcd(token[1]);
-		}else if(strcmp(token[0],HELP)==0){
+		}else if(strcmp(token[0],CMD_HELP)==0){
 				display_help();
-		}else if(strcmp(token[0],QUIT)==0){
+		}else if(strcmp(token[0],CMD_QUIT)==0){
 				send_quit(token[0]);
 				exit(0);
 		}else{

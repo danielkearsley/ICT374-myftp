@@ -115,20 +115,18 @@ void serve_a_client(int sd,int cid)
 
 	char opcode;
 
-	printf("reading length\n");
-
-	short* length = NULL;
-	if(read_twobytelength(sd,length) == -1){
-		printf("failed\n");
-	}
-	printf("len:%hd\n",*length);
+	// int* length = NULL;
+	// if(read_twobytelength(sd,length) == -1){
+	// 	printf("failed\n");
+	// }
+	// printf("len:%hd\n",*length);
 
 	while (read_code(sd,&opcode) > 0){
 
 		switch(opcode){
 			case OP_PUT:
 				logger(cid,"PUT");
-				short* length = NULL;
+				int* length = NULL;
 				printf("about to read length\n");
 				if( read_twobytelength(sd,length) == -1){
 					printf("read 2b failed\n");

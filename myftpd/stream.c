@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include <errno.h>
 
 
 int readn(int fd, char *buf, int bufsize)
@@ -56,7 +57,7 @@ int writen(int fd, char *buf, int nbytes)
 }
 
 
-int read_code(int fd,char* opcode)
+int read_code(int fd, char* opcode)
 {
 	char data;
 
@@ -81,22 +82,55 @@ int write_code(int fd, char opcode)
 
 int write_twobytelength(int fd, int length)
 {
-	short data = length;
-	data = htons(data);
-	if (write(fd, (char*)&data, 1) != 1) return (-1);
-	if (write(fd, (char*)(&data)+1, 1) != 1) return (-1);
+	short dlength = length;
+	dlength = htons(dlength);
+	char* data = (char*)&dlength;
+	int data_size = sizeof(dlength);
+	int rc = 0;
+
+	while(data_size > 0){
+		if( (rc = write(fd,data,data_size)) < 0){
+			if((errno == EAGAIN) || (errno == EWOULDBLOCK)){
+				printf("EAGAIN || EWOULDBLOCK\n");
+			}else{
+				return -1;
+			}
+		}else{
+			data += rc;
+			data_size -= rc;
+		}
+	}
+
+
+	//if (write(fd, &data, sizeof(data)) <= 0) return (-1);
+	// if (write(fd, (char*)(&data)+1, 1) != 1) return (-1);
 
 	return 1;
 }
 
-int read_twobytelength(int fd, short* length)
+int read_twobytelength(int fd, int* length)
 {
-	printf("reading length");
-	short data;
-  if (read(fd, (char *) &data, 1) != 1) return (-1);
-  if (read(fd, (char *) (&data)+1, 1) != 1) return (-1);
-  *length = (int) ntohs(data);  /* convert to host byte order */
-  printf("read_ %d\n",*length);
+	short dlength = 0;
+	char* data = (char*)&dlength;
+	int data_size = sizeof(dlength);
+	int rc = 0;
+
+	while( data_size > 0){
+		if( (rc = read(fd,data,data_size)) < 0 ){
+			if((errno == EAGAIN) || (errno == EWOULDBLOCK)){
+				printf("EAGAIN || EWOULDBLOCK\n");
+			}else{
+				return -1;
+			}
+		}else{
+			data += rc;
+			data_size -= rc;
+		}
+	}
+
+  // if (read(fd, &data, sizeof(data)) <= 0) return (-1);
+  // if (read(fd, (char*) (&data)+1, 1) != 1) return (-1);
+  *length = (int)ntohs(dlength);  /* convert to host byte order */
 
 	return 1;
 }
