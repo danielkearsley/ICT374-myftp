@@ -63,6 +63,11 @@
 #define SERV_TCP_PORT   40007   /* default server listening port */
 #define LOGPATH "./myftpd.log"	/* log file */
 
+
+/*
+ * Accepts a client id, formatted output string, and va_list of args.
+ * Outputs current time, client id, and passed format string to log file.
+ */
 void logger(int cid, char* argformat, ... ){
 	FILE* logfile;
   if( (logfile = fopen(LOGPATH,"a")) == NULL ){
@@ -81,7 +86,7 @@ void logger(int cid, char* argformat, ... ){
   time(&timedata );
   timevalue = localtime ( &timedata );
 	asctime_r(timevalue,timeformat); // string representation of time
-	timeformat[strlen(timeformat)-1] = '-';//remove \n
+	timeformat[strlen(timeformat)-1] = '-';//replace \n
 
 	if(cid != 0){
  		sprintf(cidstring,cidformat,cid);
@@ -105,76 +110,193 @@ void logger(int cid, char* argformat, ... ){
 
 
 /*
-	Clem 28/10/17
-		Returns the data sent to server.
-*/
-void serve_a_client(int sd,int cid)
+ *
+ *
+ */
+void handle_put(int sd, int cid)
 {
-	// int nr, nw;
-	// char buf[MAX_BLOCK_SIZE];
+	logger(cid,"PUT");
 
+	int *filenamelength;
+	char ackcode;
 	char opcode;
 
-	// int* length = NULL;
-	// if(read_twobytelength(sd,length) == -1){
-	// 	printf("failed\n");
-	// }
-	// printf("len:%hd\n",*length);
+	// finish reading put message
+
+	if( read_twobytelength(sd,&filenamelength) == -1){
+		logger(cid,"failed to read 2 byte length");
+	}
+	logger(cid,"filename length: %d",*filenamelength);
+
+	char filename[*filenamelength];
+
+	if(read_nbytes(sd,filename,*filenamelength) == -1){
+		logger(cid,"failed to read filename");
+	}
+	logger(cid,"filename: %s",filename);
+
+
+	// write acknowledgement
+
+	if( write_code(sd,OP_PUT) == -1){
+		logger(cid,"failed to write OP_PUT");
+	}
+	logger(cid,"returned OP_PUT");
+
+	/*
+		if( filename exists in curr dir ){
+			ackcode = ACK_PUT_FILENAME
+		} else if( filename can't be created in cur dir ){
+			ackcode  = ACK_PUT_CREATEFILE
+		}else if (other fail?){
+			ackcode = ACK_PUT_OTHER
+		}else{
+			ackcode = ACK_PUT_SUCCESS
+		}
+	*/
+	ackcode = ACK_PUT_SUCCESS; // debug statement
+
+	if(write_code(sd,ackcode) == -1){
+		logger(cid,"failed to write ackcode:%c",ackcode);
+	}
+	logger(cid,"returned ackcode:%c",ackcode);
+
+
+	// expect to read data message
+
+	if(read_code(sd,&opcode) == -1){
+		logger(cid,"failed to read code");
+	}
+	if(opcode != OP_DATA){
+		logger(cid,"unexpected opcode:%c, expected: %c",opcode,OP_DATA);
+	}
+
+	char filetype;
+	if(read_code(sd,&filetype) == -1){
+		logger(cid,"failed to read filetype");
+	}
+	logger(cid,"filetype: %c",filetype);
+
+	int *filesize;
+
+	if(read_fourbytelength(sd,&filesize) == -1){
+		logger(cid,"failed to read filesize");
+	}
+	logger(cid,"filesize:%d",*filesize);
+
+	char content[*filesize];
+
+	if(read_nbytes(sd,content,*filesize) == -1){
+		logger(cid,"failed to read file content");
+	}
+	logger(cid,"content:%s",content);//debug
+
+	//debug - write ack code
+	if(write_code(sd,ACK_PUT_SUCCESS) == -1){
+		logger(cid,"failed to write ackcode:%c",ACK_PUT_SUCCESS);
+	}
+	logger(cid,"returned ackcode:%c",ACK_PUT_SUCCESS);
+
+}
+
+/*
+ *
+ *
+ */
+void handle_get(int sd, int cid)
+{
+	logger(cid,"GET");
+	write_code(sd,ACK_PUT_SUCCESS);
+
+}
+
+/*
+ *
+ *
+ */
+void handle_pwd(int sd, int cid)
+{
+	logger(cid,"PWD");
+	write_code(sd,ACK_PUT_SUCCESS);
+
+}
+
+/*
+ *
+ *
+ */
+void handle_dir(int sd, int cid)
+{
+	logger(cid,"DIR");
+	write_code(sd,ACK_PUT_SUCCESS);
+
+}
+
+/*
+ *
+ *
+ */
+void handle_cd(int sd, int cid)
+{
+	logger(cid,"CD");
+	write_code(sd,ACK_PUT_SUCCESS);
+
+}
+
+/*
+ *
+ *
+ */
+void handle_data(int sd, int cid)
+{
+	logger(cid,"DATA");
+	write_code(sd,ACK_PUT_SUCCESS);
+
+}
+
+
+
+
+/*
+ *
+ *
+ */
+void serve_a_client(int sd,int cid)
+{
+	char opcode;
+
+	logger(cid,"connected");
 
 	while (read_code(sd,&opcode) > 0){
 
 		switch(opcode){
 			case OP_PUT:
-				logger(cid,"PUT");
-				int* length = NULL;
-				printf("about to read length\n");
-				if( read_twobytelength(sd,length) == -1){
-					printf("read 2b failed\n");
-				}
-				printf("length: %d\n",*length);
-				write_code(sd,ACK_PUT_SUCCESS);
-				// write_code(sd,ACK_PUT_SUCCESS);
-				// write_opcode(sd,OP_PUT);
-
+				handle_put(sd,cid);
 			break;
 			case OP_GET:
-				logger(cid,"GET");
-				write_code(sd,ACK_PUT_SUCCESS);
+				handle_get(sd,cid);
 			break;
 			case OP_PWD:
-				logger(cid,"PWD");
-				write_code(sd,ACK_PUT_SUCCESS);
+				handle_pwd(sd,cid);
 			break;
 			case OP_DIR:
-				logger(cid,"DIR");
-				write_code(sd,ACK_PUT_SUCCESS);
+				handle_dir(sd,cid);
 			break;
 			case OP_CD:
-				logger(cid,"CD");
-				write_code(sd,ACK_PUT_SUCCESS);
+				handle_cd(sd,cid);
 			break;
 			case OP_DATA:
-				logger(cid,"DATA");
-				write_code(sd,ACK_PUT_SUCCESS);
+				handle_data(sd,cid);// not needed here?
 			break;
 			default:
-				printf("INVALID OPCODE");
-				//invalid :. disregard
+				logger(cid,"invalid opcode");//invalid :. disregard
 			break;
-		}
+		}// end switch
 
-		// /* read data from client */
-		// if ((nr = readn(sd, buf, sizeof(buf))) <= 0)
-		// 	return;    connection broken down
-
-		// /* process data */
-		// buf[nr] = '\0';
-
-		// /* send results to client */
-		// nw = writen(sd, buf, nr);
 	}// end while
-	logger(cid,"connection closed");
-	return; //connection closed
+
+	logger(cid,"disconnected");
+	return;
 }
 
 
@@ -200,13 +322,19 @@ void daemon_init(void)
 		printf("myftpd PID: %d\n", pid);
 		exit(0);
 	}else{
-		logger(0,"server initialised");
 		/* child */
+		logger(0,"server initialised");
 		setsid();		/* become session leader */
+
+
+		// move chdir outside daemon_init()
+		// set by user from argv in main, or current if not existent
 		char current_dir[128];
 		getcwd(current_dir,sizeof(current_dir));
 		chdir(current_dir);	/* change working directory */
 		logger(0,"dir set to %s",current_dir);
+
+
 
 		umask(0);		/* clear file mode creation mask */
 
@@ -226,6 +354,7 @@ int main(int argc, char* argv[])
 	unsigned short port;   // server listening port
 	socklen_t cli_addrlen;
 	struct sockaddr_in ser_addr, cli_addr;
+	int cid = 0; // client session id
 
 
 	/* get the port number */
@@ -267,7 +396,6 @@ int main(int argc, char* argv[])
 	/* become a listening socket */
 	listen(sd, 5); // 5 maximum connections can be in queue
 	logger(0,"myftp server now listening on port %hu",port);
-	int cid = 0;
 
 	while (1) {
 		/* wait to accept a client request for connection */
@@ -289,7 +417,6 @@ int main(int argc, char* argv[])
 		}else{
 			/* now in child, serve the current client */
 			close(sd);
-			logger(cid,"connected");
 			serve_a_client(nsd,cid);
 			exit(0);
 		}

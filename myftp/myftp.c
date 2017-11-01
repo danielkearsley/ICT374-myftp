@@ -29,6 +29,9 @@
 #include "token.h"
 
 
+#define MAX_CMD_INPUT 64
+#define SERV_TCP_PORT   40007   /* default server listening port */
+
 // client commands available
 #define CMD_PUT  "put"
 #define CMD_GET  "get"
@@ -78,21 +81,86 @@ void response(int sd){
 	printf("Sever Output: %c\n",  code);
 }
 
-void send_put(int sd, char *token)
+void send_put(int sd, char *filename2)
 {
-	if(write_code(sd,OP_PUT) == -1){
+	if( write_code(sd,OP_PUT) == -1){
 		printf("failed to send put");
+		return;
 	}
-	printf("sent put\n");
 
-	short length = 100;
-	printf("sending %hd\n",length);
-	if( write_twobytelength(sd,length) == -1){
+
+	// open the file
+	// open(token);
+
+	char *filename = "x.txt";
+
+	int filenamelength = strlen(filename);
+
+	if( write_twobytelength(sd,filenamelength) == -1){
 		printf("failed to send length\n");
+		return;
 	}
-	printf("sent length %hd\n",length);
+	printf("sent length %d\n",filenamelength);
 
-	response(sd);
+	if( write_nbytes(sd,filename,filenamelength) <= 0 ){
+		printf("failed to send filename\n");
+		return;
+	}
+	printf("sent filename %s\n",filename);
+
+
+
+	char opcode;
+
+	if(read_code(sd,&opcode) == -1){
+		printf("failed to read opcode\n");
+	}
+	if(opcode != OP_PUT){
+		printf("unexpected opcode\n");
+	}
+	printf("opcode processed\n"); //debug
+
+	char ackcode;
+
+	if(read_code(sd,&ackcode) == -1){
+		printf("failed to read ackcode\n");
+	}
+	if(ackcode != ACK_PUT_SUCCESS){
+		printf("print relevant error message\n");
+	}
+
+	printf("ackcode processed\n");//debug
+
+
+	if( write_code(sd,OP_DATA) == -1){
+		printf("failed to send OP_DATA\n");
+	}
+	printf("sent OP_DATA\n");//debug
+
+
+	char filetype = ACK_DATA_ASCII;
+
+	if(write_code(sd,filetype) == -1){
+		printf("failed to send ACK_DATA_ASCII\n");
+	}
+	printf("sent filetype\n");//debug
+
+	char *content = "x file static content\nend";
+	int filesize = strlen(content);
+
+	if(write_fourbytelength(sd,filesize) == -1){
+		printf("failed to send filesize\n");
+	}
+	printf("sent filesize:%d\n",filesize);//debug
+
+	if(write_nbytes(sd,content,filesize) == -1){
+		printf("failed to send file content\n");
+	}
+	printf("sent file content\n");//debug
+
+	response(sd); // debug
+
+
 
 	// if( write_twobytelength(sd,filenamelength) == -1 ){
 	// 	printf("failed to send filesize\n");
@@ -181,11 +249,9 @@ void display_lcd(char *token)
 	chdir(token);
 }
 
-void send_quit(char *token)
+void display_quit()
 {
-	printf("%s\n", token);
-	printf("just quit\n");
-
+	printf("Session terminated\n");
 }
 
 void display_help()
@@ -203,10 +269,6 @@ void display_help()
 	printf("help - display this information\n");
 }
 
-
-#define MAX_CMD_INPUT 64
-#define SERV_TCP_PORT   40007   /* default server listening port */
-
 int main(int argc, char* argv[])
 {
 	int sd, nr;
@@ -220,18 +282,22 @@ int main(int argc, char* argv[])
 		/* assume server running on the local host and on default port */
 		gethostname(host, sizeof(host));
 		port = SERV_TCP_PORT;
+
 	} else if (argc == 2) { /* use the given host name */
 		strcpy(host, argv[1]);
 		port = SERV_TCP_PORT;
-	} else if (argc == 3) { // use given host and port for server
+
+	} else if (argc == 3) { /* use given host and port for server */
 		strcpy(host, argv[1]);
 		int n = atoi(argv[2]);
+
 		if (n >= 1024 && n < 65536){
 			port = n;
 		}	else {
 			printf("Error: server port number must be between 1024 and 65535\n");
 			exit(1);
 		}
+
 	} else {
 		printf("Usage: %s [ <server host name> [ <server listening port> ] ]\n", argv[0]);
 		exit(1);
@@ -255,46 +321,51 @@ int main(int argc, char* argv[])
 	}
 
 
-
+ 	char *tokens[2];
 
 	while (1) {
 		printf("> ");
 
-		// implement simplified command.h and token.h to parse user input into tokens of commands.
-
+		/* read user input and tokenise */
 		fgets(buf, sizeof(buf), stdin);
 		nr = strlen(buf);
 		if (buf[nr-1] == '\n') {
 			buf[nr-1] = '\0';
 			nr--;
 		}
+		tokenise(buf, tokens);
 
-		char *token[2];
+		if(strcmp(tokens[0],CMD_PUT)==0){
+			send_put(sd, tokens[1]);
 
-		tokenise(buf, token);
+		}else if(strcmp(tokens[0],CMD_GET)==0){
+			send_get(sd, tokens[1]);
 
-		// change buf to first token / command from command.h
-		if(strcmp(token[0],CMD_PUT)==0){
-				send_put(sd, token[1]);
-		}else if(strcmp(token[0],CMD_GET)==0){
-				send_get(sd, token[1]);
-		}else if(strcmp(token[0],CMD_PWD)==0){
-				send_pwd(sd, token[0]);
-		}else if(strcmp(token[0],CMD_LPWD)==0){
-				display_lpwd();
-		}else if(strcmp(token[0],CMD_DIR)==0){
-				send_dir(sd, token[0]);
-		}else if(strcmp(token[0],CMD_LDIR)==0){
-				display_ldir(token[1]);
-		}else if(strcmp(token[0],CMD_CD)==0){
-				send_cd(sd, token[1]);
-		}else if(strcmp(token[0],CMD_LCD)==0){
-				display_lcd(token[1]);
-		}else if(strcmp(token[0],CMD_HELP)==0){
-				display_help();
-		}else if(strcmp(token[0],CMD_QUIT)==0){
-				send_quit(token[0]);
-				exit(0);
+		}else if(strcmp(tokens[0],CMD_PWD)==0){
+			send_pwd(sd, tokens[0]);
+
+		}else if(strcmp(tokens[0],CMD_LPWD)==0){
+			display_lpwd();
+
+		}else if(strcmp(tokens[0],CMD_DIR)==0){
+			send_dir(sd, tokens[0]);
+
+		}else if(strcmp(tokens[0],CMD_LDIR)==0){
+			display_ldir(tokens[1]);
+
+		}else if(strcmp(tokens[0],CMD_CD)==0){
+			send_cd(sd, tokens[1]);
+
+		}else if(strcmp(tokens[0],CMD_LCD)==0){
+			display_lcd(tokens[1]);
+
+		}else if(strcmp(tokens[0],CMD_HELP)==0){
+			display_help();
+
+		}else if(strcmp(tokens[0],CMD_QUIT)==0){
+			display_quit();
+			exit(0);
+
 		}else{
 				printf("undefined command, type 'help' for help\n");
 		}
