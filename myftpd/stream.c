@@ -8,6 +8,7 @@
 #include  "stream.h"
 
 #include <unistd.h>
+#include <stdio.h>
 
 
 
@@ -78,36 +79,24 @@ int write_code(int fd, char opcode)
 }
 
 
-
-int read_ack(int fd, int* ackcode)
-{
-	short data;
-	if (write(fd, (char*)&data, 1) != 1) return (-1);
-	data = ntohs(data);
-	*ackcode = (int) data;
-
-	return 1;
-}
-
-
-int write_ack(int fd, int ackcode)
-{
-	short data = ackcode;
-	data = htons(data);
-	if (write(fd, (char*)&data, 1) != 1) return (-1);
-
-	return 1;
-}
-
-
 int write_twobytelength(int fd, int length)
 {
+	short data = length;
+	data = htons(data);
+	if (write(fd, (char*)&data, 1) != 1) return (-1);
+	if (write(fd, (char*)(&data)+1, 1) != 1) return (-1);
 
 	return 1;
 }
 
-int read_twobytefilelength(int fd, int length)
+int read_twobytelength(int fd, short* length)
 {
+	printf("reading length");
+	short data;
+  if (read(fd, (char *) &data, 1) != 1) return (-1);
+  if (read(fd, (char *) (&data)+1, 1) != 1) return (-1);
+  *length = (int) ntohs(data);  /* convert to host byte order */
+  printf("read_ %d\n",*length);
 
 	return 1;
 }
@@ -119,21 +108,10 @@ int write_fourbytelength(int fd, int length)
 	return 1;
 }
 
-int read_fourbytefilelength(int fd, int length)
+int read_fourbytelength(int fd, int* length)
 {
 
 	return 1;
 }
 
 
-int write_formatcode(int fd, int formatcode)
-{
-
-	return 1;
-}
-
-int read_formatcode(int fd, int formatcode)
-{
-
-	return 1;
-}
