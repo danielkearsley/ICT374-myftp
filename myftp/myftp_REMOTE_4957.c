@@ -13,7 +13,7 @@
  *
  */
 
-#include <dirent.h>
+#include <dirent.h> 
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -80,39 +80,11 @@ void response(int sd){
 
 void send_put(int sd, char *token)
 {
-	// if(write_code(sd,OP_PUT) == -1){
-	// 	printf("failed to send put");
-	// }
-	// response(sd);
-
-	short length = 100;
-	printf("sending %hd\n",length);
-	if( write_twobytelength(sd,length) == -1){
-		printf("failed to send length\n");
+	//printf("%s\n", token);
+	if( write_code(sd,OP_PUT) == -1){
+		printf("failed to send put\n");
 	}
-	printf("sent length %hd\n",length);
-
 	response(sd);
-
-	// if( write_twobytelength(sd,filenamelength) == -1 ){
-	// 	printf("failed to send filesize\n");
-	// }
-	// if( write_filename(sd,filename,filenamelength) == -1){
-
-	// }
-
-	// read_code(sd,);
-
-	// write_code(sd,OP_DATA);
-
-	// write_code(sd,ACK_DATA_ASCII);
-
-	// write_fourbytelength(sd,filesize);
-
-	// write_file(sd,filedescriptor);
-
-
-	// response(sd);
 }
 
 void send_get(int sd, char *token)

@@ -1,5 +1,5 @@
 /**
- * AUTHOR: Clem Davies, Daniel Kearsley
+ * AUTHOR: Clem Davies
  * DATE: 16/10/17
  * FILENAME: myftp.c
  * DESCRIPTION: The client program for myftp.
@@ -13,7 +13,6 @@
  *
  */
 
-#include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -26,7 +25,6 @@
 #include <unistd.h>
 
 #include "stream.h"
-#include "token.h"
 
 
 // client commands available
@@ -78,7 +76,7 @@ void response(int sd){
 	printf("Sever Output: %c\n",  code);
 }
 
-void send_put(int sd, char *token)
+void send_put(int sd)
 {
 	// if(write_code(sd,OP_PUT) == -1){
 	// 	printf("failed to send put");
@@ -115,74 +113,60 @@ void send_put(int sd, char *token)
 	// response(sd);
 }
 
-void send_get(int sd, char *token)
+void send_get(int sd)
 {
-	printf("%s\n", token);
 	write_code(sd,OP_GET);
 	response(sd);
+
+
 }
 
-void send_pwd(int sd, char *token)
+void send_pwd(int sd)
 {
-	printf("%s\n", token);
+
 	write_code(sd,OP_PWD);
 	response(sd);
 
 }
 
-//Displays the current local directory
 void display_lpwd()
 {
-	char cwd[1024];
-    getcwd(cwd, sizeof(cwd));
-    printf("%s\n", cwd);
-	//printf("display local pwd\n");
+	printf("display local pwd\n");
 
 }
 
-void send_dir(int sd, char *token)
+void send_dir(int sd)
 {
-	printf("%s\n", token);
+
 	write_code(sd,OP_DIR);
 	response(sd);
 
 }
 
-//Chenges the current local directory
-void display_ldir(char *token)
+void display_ldir()
 {
-	if(token == NULL){
-		token = ".";
-	}
-	FILE *d;
-  	struct dirent *dir;
-  	d = opendir(token);
-	if (d){
-    	while ((dir = readdir(d)) != NULL){
-	      printf("%s\n", dir->d_name);
-	    }
+	printf("display local dir list\n");
 
-	    closedir(d);
-	}
+
 }
 
-void send_cd(int sd, char *token)
+void send_cd(int sd)
 {
-	printf("%s\n", token);
 	write_code(sd,OP_CD);
 	response(sd);
 
 
 }
 
-void display_lcd(char *token)
+void display_lcd()
 {
-	chdir(token);
+	printf("change local dir\n");
+
+
 }
 
-void send_quit(char *token)
+void send_quit()
 {
-	printf("%s\n", token);
 	printf("just quit\n");
 
 }
@@ -268,31 +252,27 @@ int main(int argc, char* argv[])
 			nr--;
 		}
 
-		char *token[2];
-
-		tokenise(buf, token);
-
 		// change buf to first token / command from command.h
-		if(strcmp(token[0],PUT)==0){
-				send_put(sd, token[1]);
-		}else if(strcmp(token[0],GET)==0){
-				send_get(sd, token[1]);
-		}else if(strcmp(token[0],PWD)==0){
-				send_pwd(sd, token[0]);
-		}else if(strcmp(token[0],LPWD)==0){
+		if(strcmp(buf,PUT)==0){
+				send_put(sd);
+		}else if(strcmp(buf,GET)==0){
+				send_get(sd);
+		}else if(strcmp(buf,PWD)==0){
+				send_pwd(sd);
+		}else if(strcmp(buf,LPWD)==0){
 				display_lpwd();
-		}else if(strcmp(token[0],DIR)==0){
-				send_dir(sd, token[0]);
-		}else if(strcmp(token[0],LDIR)==0){
-				display_ldir(token[1]);
-		}else if(strcmp(token[0],CD)==0){
-				send_cd(sd, token[1]);
-		}else if(strcmp(token[0],LCD)==0){
-				display_lcd(token[1]);
-		}else if(strcmp(token[0],HELP)==0){
+		}else if(strcmp(buf,DIR)==0){
+				send_dir(sd);
+		}else if(strcmp(buf,LDIR)==0){
+				display_ldir();
+		}else if(strcmp(buf,CD)==0){
+				send_cd(sd);
+		}else if(strcmp(buf,LCD)==0){
+				display_lcd();
+		}else if(strcmp(buf,HELP)==0){
 				display_help();
-		}else if(strcmp(token[0],QUIT)==0){
-				send_quit(token[0]);
+		}else if(strcmp(buf,QUIT)==0){
+				send_quit();
 				exit(0);
 		}else{
 				printf("undefined command, type 'help' for help\n");

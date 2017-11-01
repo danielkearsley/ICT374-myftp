@@ -56,7 +56,7 @@ int writen(int fd, char *buf, int nbytes)
 }
 
 
-int read_code(int fd,char* opcode)
+int read_code(int fd, char* opcode)
 {
 	char data;
 
