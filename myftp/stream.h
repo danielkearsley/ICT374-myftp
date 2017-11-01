@@ -51,9 +51,9 @@ int read_code(int fd,char *code);
  * return: -1 : write failed
  *					1 : write success
  */
-int write_twobytelength(int fd, short length);
+int write_twobytelength(int fd, int length);
 
-int read_twobytelength(int fd, int* length);
+int read_twobytelength(int fd, short* length);
 
 
 /* Writes a four byte integer from length to socket fd.
