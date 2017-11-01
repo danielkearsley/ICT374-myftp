@@ -78,10 +78,39 @@ void response(int sd){
 
 void send_put(int sd)
 {
-	if( write_code(sd,OP_PUT) == -1){
-		printf("failed to send put\n");
+	// if(write_code(sd,OP_PUT) == -1){
+	// 	printf("failed to send put");
+	// }
+	// response(sd);
+
+	short length = 100;
+	printf("sending %hd\n",length);
+	if( write_twobytelength(sd,length) == -1){
+		printf("failed to send length\n");
 	}
+	printf("sent length %hd\n",length);
+
 	response(sd);
+
+	// if( write_twobytelength(sd,filenamelength) == -1 ){
+	// 	printf("failed to send filesize\n");
+	// }
+	// if( write_filename(sd,filename,filenamelength) == -1){
+
+	// }
+
+	// read_code(sd,);
+
+	// write_code(sd,OP_DATA);
+
+	// write_code(sd,ACK_DATA_ASCII);
+
+	// write_fourbytelength(sd,filesize);
+
+	// write_file(sd,filedescriptor);
+
+
+	// response(sd);
 }
 
 void send_get(int sd)
