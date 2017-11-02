@@ -290,9 +290,39 @@ void send_get(int sd, char *token)
 
 void send_pwd(int sd, char *token)
 {
+	char opcode;
+	int filesize;
+
 	printf("%s\n", token);
-	write_code(sd,OP_PWD);
-	response(sd);
+	if(write_code(sd,OP_PWD) == -1){
+		printf("Failed to send pwd\n");
+		return;
+	}
+
+	if(read_code(sd,&opcode) == -1){
+		printf("Failed to read opcode\n");
+		return;
+	}
+
+	if(opcode != OP_PWD){
+		printf("Invalid opcode\n");
+		return;
+	}
+
+	if(read_twobytelength(sd, &filesize) == -1){
+		printf("Failed to read filesize\n");
+		return;
+	}
+
+	char directory[filesize];
+
+	if(read_nbytes(sd, directory, sizeof(directory)) == -1){
+		printf("Failed to read directory\n");
+		return;
+	}
+
+	printf("%s\n", directory);
+	//response(sd);
 
 }
 
@@ -308,9 +338,38 @@ void display_lpwd()
 
 void send_dir(int sd, char *token)
 {
+	char opcode;
+	int filesize;
+
 	printf("%s\n", token);
-	write_code(sd,OP_DIR);
-	response(sd);
+	if(write_code(sd,OP_DIR) == -1){
+		printf("Failed to send dir\n");
+		return;
+	}
+
+	if(read_code(sd,&opcode) == -1){
+		printf("Failed to read opcode\n");
+		return;
+	}
+
+	if(opcode != OP_DIR){
+		printf("Invalid opcode\n");
+		return;
+	}
+
+	if(read_fourbytelength(sd, &filesize) == -1){
+		printf("Failed to read filesize\n");
+		return;
+	}
+
+	char directory[filesize];
+
+	if(read_nbytes(sd, directory, sizeof(directory)) == -1){
+		printf("Failed to read directory list\n");
+		return;
+	}
+
+	printf("%s\n", directory);
 
 }
 
@@ -335,9 +394,60 @@ void display_ldir(char *token)
 
 void send_cd(int sd, char *token)
 {
+	char opcode;
+	char ackcode;
+	int filesize;
+	int length = strlen(token);
+
 	printf("%s\n", token);
-	write_code(sd,OP_CD);
-	response(sd);
+	if(write_code(sd,OP_CD) == -1){
+		printf("Failed to send cd\n");
+		return;
+	}
+
+	if(read_code(sd,&opcode) == -1){
+		printf("Failed to read opcode\n");
+		return;
+	}
+
+	if(opcode != OP_CD){
+		printf("Invalid opcode\n");
+		return;
+	}
+
+	if(write_twobytelength(sd, length) == -1){
+		printf("Failed to write length\n");
+		return;
+	}
+
+	if(write_nbytes(sd, token, sizeof(token)) == -1){
+		printf("Failed to write directory name\n");
+	}
+
+	if(read_code(sd,&opcode) == -1){
+		printf("Failed to read opcode\n");
+		return;
+	}
+
+	if(opcode != OP_CD){
+		printf("Invalid opcode\n");
+		return;
+	}
+
+	if(read_code(sd,&ackcode) == -1){
+		printf("Failed to read ackcode\n");
+		return;
+	}
+
+	if(ackcode == ACK_CD_FIND){
+		printf("the server cannot find the directory\n");
+		return;
+	}
+
+	if(ackcode == ACK_CD_OTHER){
+		printf("the server cannot change directory due to other reasons\n");
+		return;
+	}
 
 
 }
