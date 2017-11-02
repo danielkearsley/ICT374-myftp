@@ -13,33 +13,38 @@
  *
  */
 
-#include <dirent.h> 
+#include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "stream.h"
 #include "token.h"
 
+#define FILE_BLOCK_SIZE 512
+#define MAX_CMD_INPUT 64
+#define SERV_TCP_PORT   40007   /* default server listening port */
 
 // client commands available
-#define PUT  "put"
-#define GET  "get"
-#define PWD  "pwd"
-#define LPWD "lpwd"
-#define DIR  "dir"
-#define LDIR "ldir"
-#define CD   "cd"
-#define LCD  "lcd"
-#define QUIT "quit"
-#define HELP "help"
+#define CMD_PUT  "put"
+#define CMD_GET  "get"
+#define CMD_PWD  "pwd"
+#define CMD_LPWD "lpwd"
+#define CMD_DIR  "dir"
+#define CMD_LDIR "ldir"
+#define CMD_CD   "cd"
+#define CMD_LCD  "lcd"
+#define CMD_QUIT "quit"
+#define CMD_HELP "help"
 
 // opcodes
 #define OP_PUT  'P'
@@ -55,9 +60,17 @@
 #define ACK_PUT_CREATEFILE '2'
 #define ACK_PUT_OTHER '3'
 
+// error messages for OP_PUT ack codes
+#define ACK_PUT_FILENAME_MSG "the server cannot accept the file as there is a filename clash"
+#define ACK_PUT_CREATEFILE_MSG "the server cannot accept the file because it cannot create the named file"
+#define ACK_PUT_OTHER_MSG "the server cannot accept the file due to other reasons"
+
 // ack codes for OP_GET
 #define ACK_GET_FIND '0'
 #define ACK_GET_OTHER '1'
+
+// error messages for OP_GET ack codes
+#define ACK_GET_OTHER_MSG "the server cannot send the file due to other reasons"
 
 // ack codes for OP_DATA
 #define ACK_DATA_ASCII '0'
@@ -66,6 +79,14 @@
 // ack codes for OP_CD
 #define ACK_CD_FIND '0'
 #define ACK_CD_OTHER '1'
+
+// error messages for OP_CD ack codes
+#define ACK_CD_OTHER_MSG "the server cannot change directory due to other reasons"
+
+
+#define UNEXPECTED_ERROR_MSG "unexpected behaviour"
+
+
 
 
 /* temp debug function, prints response from server */
@@ -78,13 +99,175 @@ void response(int sd){
 	printf("Sever Output: %c\n",  code);
 }
 
-void send_put(int sd, char *token)
+void send_put(int sd, char *filename)
 {
-	//printf("%s\n", token);
-	if( write_code(sd,OP_PUT) == -1){
-		printf("failed to send put\n");
+
+	// open the file
+	int fd;
+	if( (fd = open(filename, O_RDONLY)) == -1){
+		printf("failed to open file: %s\n",filename);
+		return;
 	}
-	response(sd);
+
+
+/* ---------- */
+	struct stat inf;
+	printf("%s: ", filename);
+	if(fstat(fd, &inf) < 0) {
+		printf("fstat error");
+		return;
+	}
+
+	int bytes = (int)inf.st_size;
+	int blocksize = (int)inf.st_blksize;
+
+	printf("nbytes: %d\n",bytes);
+	printf("blocksize: %d\n",blocksize);
+
+	char buf[FILE_BLOCK_SIZE];
+	int nr = 0;
+	int totalr = 0;
+	int found_null = 0;
+	while((nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
+		for(int i = 0; (i < nr) && (!found_null); i++){
+			// if(buf[i] == '\0'){
+			// 	found_null = 1;
+			// }
+			found_null = buf[i] == '\0';
+		}
+		totalr += nr;
+		if(found_null == 1) break;
+	}
+	if(found_null){
+		printf("FILE IS BINARY\n");
+	}else{
+		printf("FILE IS NOT BINARY\n");
+	}
+
+
+
+
+	return;
+/* ---------- */
+
+
+
+
+
+
+
+
+
+	if( write_code(sd,OP_PUT) == -1){
+		printf("failed to send put");
+		return;
+	}
+
+
+	int filenamelength = strlen(filename);
+
+	if( write_twobytelength(sd,filenamelength) == -1){
+		printf("failed to send length\n");
+		return;
+	}
+	printf("sent length %d\n",filenamelength);//debug
+
+	if( write_nbytes(sd,filename,filenamelength) <= 0 ){
+		printf("failed to send filename\n");
+		return;
+	}
+	printf("sent filename %s\n",filename);//debug
+
+
+
+	char opcode;
+
+	if(read_code(sd,&opcode) == -1){
+		printf("failed to read opcode\n");
+	}
+	if(opcode != OP_PUT){
+		printf("unexpected opcode\n");
+	}
+	printf("opcode processed\n"); //debug
+
+	char ackcode;
+
+	if(read_code(sd,&ackcode) == -1){
+		printf("failed to read ackcode\n");
+	}
+	switch(ackcode){
+		case ACK_PUT_SUCCESS://continue
+		break;
+		case ACK_PUT_FILENAME:
+			printf("%s\n",ACK_PUT_FILENAME_MSG);
+			return;
+		break;
+		case ACK_PUT_CREATEFILE:
+			printf("%s\n",ACK_PUT_CREATEFILE_MSG);
+			return;
+		break;
+		case ACK_PUT_OTHER:
+			printf("%s\n",ACK_PUT_OTHER_MSG);
+			return;
+		break;
+		default:
+			printf("%s\n",UNEXPECTED_ERROR_MSG);
+			return;
+		break;
+	}
+
+	printf("ackcode processed\n");//debug
+
+
+	if( write_code(sd,OP_DATA) == -1){
+		printf("failed to send OP_DATA\n");
+	}
+	printf("sent OP_DATA\n");//debug
+
+
+	char filetype = ACK_DATA_ASCII; // figure out file type
+
+	if(write_code(sd,filetype) == -1){
+		printf("failed to send ACK_DATA_ASCII\n");
+	}
+	printf("sent filetype\n");//debug
+
+	char *content = "x file static content\nend";
+	int filesize = strlen(content);
+
+	if(write_fourbytelength(sd,filesize) == -1){
+		printf("failed to send filesize\n");
+	}
+	printf("sent filesize:%d\n",filesize);//debug
+
+	if(write_nbytes(sd,content,filesize) == -1){
+		printf("failed to send file content\n");
+	}
+	printf("sent file content\n");//debug
+
+	response(sd); // debug
+
+
+
+	// if( write_twobytelength(sd,filenamelength) == -1 ){
+	// 	printf("failed to send filesize\n");
+	// }
+	// if( write_filename(sd,filename,filenamelength) == -1){
+
+	// }
+
+	// read_code(sd,);
+
+	// write_code(sd,OP_DATA);
+
+	// write_code(sd,ACK_DATA_ASCII);
+
+	// write_fourbytelength(sd,filesize);
+
+	// write_file(sd,filedescriptor);
+
+
+	// response(sd);
 }
 
 void send_get(int sd, char *token)
@@ -126,9 +309,10 @@ void display_ldir(char *token)
 	if(token == NULL){
 		token = ".";
 	}
-	FILE *d;
-  	struct dirent *dir;
-  	d = opendir(token);
+	DIR *d;
+	struct dirent *dir;
+
+	d = opendir(token);
 	if (d){
     	while ((dir = readdir(d)) != NULL){
 	      printf("%s\n", dir->d_name);
@@ -152,11 +336,9 @@ void display_lcd(char *token)
 	chdir(token);
 }
 
-void send_quit(char *token)
+void display_quit()
 {
-	printf("%s\n", token);
-	printf("just quit\n");
-
+	printf("Session terminated\n");
 }
 
 void display_help()
@@ -174,14 +356,10 @@ void display_help()
 	printf("help - display this information\n");
 }
 
-
-#define MAX_INPUT 64
-#define SERV_TCP_PORT   40007   /* default server listening port */
-
 int main(int argc, char* argv[])
 {
-	int sd, n, nr, nw, i=0;
-	char buf[MAX_INPUT], host[60];
+	int sd, nr;
+	char buf[MAX_CMD_INPUT], host[60];
 	unsigned short port;
 	struct sockaddr_in ser_addr;
 	struct hostent *hp;
@@ -191,18 +369,22 @@ int main(int argc, char* argv[])
 		/* assume server running on the local host and on default port */
 		gethostname(host, sizeof(host));
 		port = SERV_TCP_PORT;
+
 	} else if (argc == 2) { /* use the given host name */
 		strcpy(host, argv[1]);
 		port = SERV_TCP_PORT;
-	} else if (argc == 3) { // use given host and port for server
+
+	} else if (argc == 3) { /* use given host and port for server */
 		strcpy(host, argv[1]);
 		int n = atoi(argv[2]);
+
 		if (n >= 1024 && n < 65536){
 			port = n;
 		}	else {
 			printf("Error: server port number must be between 1024 and 65535\n");
 			exit(1);
 		}
+
 	} else {
 		printf("Usage: %s [ <server host name> [ <server listening port> ] ]\n", argv[0]);
 		exit(1);
@@ -226,46 +408,51 @@ int main(int argc, char* argv[])
 	}
 
 
-
+ 	char *tokens[2];
 
 	while (1) {
 		printf("> ");
 
-		// implement simplified command.h and token.h to parse user input into tokens of commands.
-
+		/* read user input and tokenise */
 		fgets(buf, sizeof(buf), stdin);
 		nr = strlen(buf);
 		if (buf[nr-1] == '\n') {
 			buf[nr-1] = '\0';
 			nr--;
 		}
+		tokenise(buf, tokens);
 
-		char *token[2];
+		if(strcmp(tokens[0],CMD_PUT)==0){
+			send_put(sd, tokens[1]);
 
-		tokenise(buf, token);
+		}else if(strcmp(tokens[0],CMD_GET)==0){
+			send_get(sd, tokens[1]);
 
-		// change buf to first token / command from command.h
-		if(strcmp(token[0],PUT)==0){
-				send_put(sd, token[1]);
-		}else if(strcmp(token[0],GET)==0){
-				send_get(sd, token[1]);
-		}else if(strcmp(token[0],PWD)==0){
-				send_pwd(sd, token[0]);
-		}else if(strcmp(token[0],LPWD)==0){
-				display_lpwd();
-		}else if(strcmp(token[0],DIR)==0){
-				send_dir(sd, token[0]);
-		}else if(strcmp(token[0],LDIR)==0){
-				display_ldir(token[1]);
-		}else if(strcmp(token[0],CD)==0){
-				send_cd(sd, token[1]);
-		}else if(strcmp(token[0],LCD)==0){
-				display_lcd(token[1]);
-		}else if(strcmp(token[0],HELP)==0){
-				display_help();
-		}else if(strcmp(token[0],QUIT)==0){
-				send_quit(token[0]);
-				exit(0);
+		}else if(strcmp(tokens[0],CMD_PWD)==0){
+			send_pwd(sd, tokens[0]);
+
+		}else if(strcmp(tokens[0],CMD_LPWD)==0){
+			display_lpwd();
+
+		}else if(strcmp(tokens[0],CMD_DIR)==0){
+			send_dir(sd, tokens[0]);
+
+		}else if(strcmp(tokens[0],CMD_LDIR)==0){
+			display_ldir(tokens[1]);
+
+		}else if(strcmp(tokens[0],CMD_CD)==0){
+			send_cd(sd, tokens[1]);
+
+		}else if(strcmp(tokens[0],CMD_LCD)==0){
+			display_lcd(tokens[1]);
+
+		}else if(strcmp(tokens[0],CMD_HELP)==0){
+			display_help();
+
+		}else if(strcmp(tokens[0],CMD_QUIT)==0){
+			display_quit();
+			exit(0);
+
 		}else{
 				printf("undefined command, type 'help' for help\n");
 		}
