@@ -126,13 +126,19 @@ void handle_put(int sd, int cid)
 	if( read_twobytelength(sd,&filenamelength) == -1){
 		logger(cid,"failed to read 2 byte length");
 	}
+
+	int size = (*filenamelength);
+	size+=1;
+	logger(cid,"filename size: %d",size);
+
+	char filename[size];
+	logger(cid,"debug");
+
 	logger(cid,"filename length: %d",*filenamelength);
-
-	char filename[*filenamelength];
-
 	if(read_nbytes(sd,filename,*filenamelength) == -1){
 		logger(cid,"failed to read filename");
 	}
+	filename[*filenamelength] = '\0';
 	logger(cid,"filename: %s",filename);
 
 
@@ -184,11 +190,12 @@ void handle_put(int sd, int cid)
 	}
 	logger(cid,"filesize:%d",*filesize);
 
-	char content[*filesize];
+	char content[(*filesize)+1];
 
 	if(read_nbytes(sd,content,*filesize) == -1){
 		logger(cid,"failed to read file content");
 	}
+	// content[*filesize] = '\0';
 	logger(cid,"content:%s",content);//debug
 
 	//debug - write ack code

@@ -99,72 +99,76 @@ void response(int sd){
 	printf("Sever Output: %c\n",  code);
 }
 
-void send_put(int sd, char *filename)
+
+char find_filetype(int fd)
 {
-
-	// open the file
-	int fd;
-	if( (fd = open(filename, O_RDONLY)) == -1){
-		printf("failed to open file: %s\n",filename);
-		return;
-	}
-
-
-/* ---------- */
-	struct stat inf;
-	printf("%s: ", filename);
-	if(fstat(fd, &inf) < 0) {
-		printf("fstat error");
-		return;
-	}
-
-	int bytes = (int)inf.st_size;
-	int blocksize = (int)inf.st_blksize;
-
-	printf("nbytes: %d\n",bytes);
-	printf("blocksize: %d\n",blocksize);
+	char filetype = ACK_DATA_ASCII;
 
 	char buf[FILE_BLOCK_SIZE];
 	int nr = 0;
 	int totalr = 0;
 	int found_null = 0;
-	while((nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
+	while((!found_null) && (nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
+		printf("inside filtype loop. nr: %d\n",nr);
 		for(int i = 0; (i < nr) && (!found_null); i++){
-			// if(buf[i] == '\0'){
-			// 	found_null = 1;
-			// }
 			found_null = buf[i] == '\0';
 		}
 		totalr += nr;
-		if(found_null == 1) break;
-	}
-	if(found_null){
-		printf("FILE IS BINARY\n");
-	}else{
-		printf("FILE IS NOT BINARY\n");
 	}
 
+	if(found_null)
+		filetype = ACK_DATA_BIN;
+
+	return filetype;
+}
+
+void send_put(int sd, char *filename)
+{
+	int fd;
+	struct stat inf;
+	int filesize;
+	int blocksize;
+	int filenamelength = strlen(filename);
+	char filetype;
+
+	char opcode;
+	char ackcode;
+
+
+	char *content = "x file static content\nend";//debug
+
+	/*
+		process the file before initiating put protocol
+	*/
+	if( (fd = open(filename, O_RDONLY)) == -1){
+		printf("failed to open file: %s\n",filename);
+		return;
+	}
+
+	printf("%s: ", filename);
+	if(fstat(fd, &inf) < 0) {
+		printf("fstat error\n");
+		return;
+	}
+
+	filesize = (int)inf.st_size;
+	blocksize = (int)inf.st_blksize;//?
+	filetype = find_filetype(fd);
+
+	printf("nbytes: %d\n",filesize); //debug
+	printf("blocksize: %d\n",blocksize); //debug
+	printf("filetype: %c\n",filetype);
 
 
 
-	return;
-/* ---------- */
 
-
-
-
-
-
-
-
-
+	/*
+		initiate put protocol
+	*/
 	if( write_code(sd,OP_PUT) == -1){
 		printf("failed to send put");
 		return;
 	}
-
-
-	int filenamelength = strlen(filename);
 
 	if( write_twobytelength(sd,filenamelength) == -1){
 		printf("failed to send length\n");
@@ -179,9 +183,6 @@ void send_put(int sd, char *filename)
 	printf("sent filename %s\n",filename);//debug
 
 
-
-	char opcode;
-
 	if(read_code(sd,&opcode) == -1){
 		printf("failed to read opcode\n");
 	}
@@ -190,7 +191,6 @@ void send_put(int sd, char *filename)
 	}
 	printf("opcode processed\n"); //debug
 
-	char ackcode;
 
 	if(read_code(sd,&ackcode) == -1){
 		printf("failed to read ackcode\n");
@@ -225,25 +225,35 @@ void send_put(int sd, char *filename)
 	printf("sent OP_DATA\n");//debug
 
 
-	char filetype = ACK_DATA_ASCII; // figure out file type
-
 	if(write_code(sd,filetype) == -1){
 		printf("failed to send ACK_DATA_ASCII\n");
 	}
 	printf("sent filetype\n");//debug
 
-	char *content = "x file static content\nend";
-	int filesize = strlen(content);
 
 	if(write_fourbytelength(sd,filesize) == -1){
 		printf("failed to send filesize\n");
 	}
 	printf("sent filesize:%d\n",filesize);//debug
 
-	if(write_nbytes(sd,content,filesize) == -1){
-		printf("failed to send file content\n");
+
+	int nr = 0;
+	char buf[FILE_BLOCK_SIZE];
+	printf("nead to read and send %d bytes\n",filesize);
+
+	while((nr = read(fd,buf,FILE_BLOCK_SIZE)) > 0){
+			printf("read %d bytes\n",nr);
+		if ( write_nbytes(sd,buf,nr) == -1){
+			printf("failed to send file content\n");
+			return;
+		}
+		printf("sent %d bytes\n",nr);
 	}
 	printf("sent file content\n");//debug
+
+	// if(write_nbytes(sd,content,filesize) == -1){
+	// 	printf("failed to send file content\n");
+	// }
 
 	response(sd); // debug
 

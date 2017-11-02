@@ -115,14 +115,14 @@ int write_twobytelength(int sd, int length)
 	return 1;
 }
 
-int read_twobytelength(int sd, int **length)
+int read_twobytelength(int sd, int *length)
 {
 	short data = 0;
 
   if (read(sd, &data, 2) != 2) return (-1);
   short conv = ntohs(data); /* convert to host byte order */
   int t = (int)conv;
-  *length = &t;
+  length = &t;
 
 	return 1;
 }
