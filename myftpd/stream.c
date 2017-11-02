@@ -78,7 +78,6 @@ int read_nbytes(int sd, char *buf, int nbytes)
 	int n = 0;
 	for (n=0; (n < nbytes) && (nr > 0); n += nr) {
 		if ((nr = read(sd, buf+n, nbytes-n)) < 0){
-			printf("returning nr:%d\n",nr);
 			return (nr);       /* error in reading */
 		}
 	}
