@@ -31,6 +31,7 @@
 
 #include "stream.h"
 
+#define FILE_BLOCK_SIZE 512
 
 // packet opcode constants
 #define OP_PUT  'P'
@@ -141,6 +142,16 @@ void handle_put(int sd, int cid)
 	logger(cid,"filename: %s",filename);
 
 
+	/* attempt to create file */
+	ackcode = ACK_PUT_SUCCESS;
+	int fd;
+	if( (fd = open(filename,O_RDONLY)) != -1 ){
+		logger(cid,"file exists: %s",filename);
+		ackcode = ACK_PUT_FILENAME;
+	}else	if( (fd = open(filename,O_WRONLY | O_CREAT, 0766 )) == -1 ){
+		logger(cid,"cannot create file: %s",filename);
+	}
+
 	// write acknowledgement
 
 	if( write_code(sd,OP_PUT) == -1){
@@ -148,23 +159,14 @@ void handle_put(int sd, int cid)
 	}
 	logger(cid,"returned OP_PUT");
 
-	/*
-		if( filename exists in curr dir ){
-			ackcode = ACK_PUT_FILENAME
-		} else if( filename can't be created in cur dir ){
-			ackcode  = ACK_PUT_CREATEFILE
-		}else if (other fail?){
-			ackcode = ACK_PUT_OTHER
-		}else{
-			ackcode = ACK_PUT_SUCCESS
-		}
-	*/
-	ackcode = ACK_PUT_SUCCESS; // debug statement
-
 	if(write_code(sd,ackcode) == -1){
 		logger(cid,"failed to write ackcode:%c",ackcode);
 	}
 	logger(cid,"returned ackcode:%c",ackcode);
+
+	if(ackcode != ACK_PUT_SUCCESS){
+		return;
+	}
 
 
 	// expect to read data message
@@ -174,6 +176,7 @@ void handle_put(int sd, int cid)
 	}
 	if(opcode != OP_DATA){
 		logger(cid,"unexpected opcode:%c, expected: %c",opcode,OP_DATA);
+		return;
 	}
 
 	char filetype;
@@ -189,13 +192,30 @@ void handle_put(int sd, int cid)
 	}
 	logger(cid,"filesize:%d",filesize);
 
-	char content[filesize+1];
 
-	if(read_nbytes(sd,content,filesize) == -1){
-		logger(cid,"failed to read file content");
+	int block_size = FILE_BLOCK_SIZE;
+	if(FILE_BLOCK_SIZE > filesize){
+		block_size = filesize;
 	}
-	content[filesize] = '\0';
-	logger(cid,"content:%s",content);//debug
+	char filebuffer[block_size];
+	int nr = 0;
+	int nw = 0;
+	int totalr = 0;
+
+
+	int bytes_left = filesize;
+	while(bytes_left > 0){
+		logger(cid,"bytes left: %d",bytes_left);
+		if(block_size > bytes_left){
+			block_size = bytes_left;
+		}
+		nr = read_nbytes(sd,filebuffer,block_size);
+		if( (nw = write(fd,filebuffer,nr)) < nr ){
+			logger(cid,"failed to write %d bytes, wrote %d instead",nr,nw);
+		}
+		bytes_left -= nw;
+		logger(cid,"bytes left: %d",bytes_left);
+	}
 
 	//debug - write ack code
 	if(write_code(sd,ACK_PUT_SUCCESS) == -1){

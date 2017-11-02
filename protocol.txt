@@ -108,8 +108,7 @@ Once the server receives a message with opcode C responds with the following mes
 
 one byte opcode which is ASCII character C followed by
 one byte acknowledgment code which is one of the following ASCII characters:
-0 - the server cannot find the directory
-1 - the server cannot change directory due to other reasons
-
-
+0 - the server changed directory succussfully
+1 - the server cannot find the directory
+2 - the server cannot change directory due to other reasons
 
