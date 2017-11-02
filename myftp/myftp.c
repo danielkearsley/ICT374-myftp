@@ -18,17 +18,19 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "stream.h"
 #include "token.h"
 
-
+#define FILE_BLOCK_SIZE 512
 #define MAX_CMD_INPUT 64
 #define SERV_TCP_PORT   40007   /* default server listening port */
 
@@ -58,9 +60,17 @@
 #define ACK_PUT_CREATEFILE '2'
 #define ACK_PUT_OTHER '3'
 
+// error messages for OP_PUT ack codes
+#define ACK_PUT_FILENAME_MSG "the server cannot accept the file as there is a filename clash"
+#define ACK_PUT_CREATEFILE_MSG "the server cannot accept the file because it cannot create the named file"
+#define ACK_PUT_OTHER_MSG "the server cannot accept the file due to other reasons"
+
 // ack codes for OP_GET
 #define ACK_GET_FIND '0'
 #define ACK_GET_OTHER '1'
+
+// error messages for OP_GET ack codes
+#define ACK_GET_OTHER_MSG "the server cannot send the file due to other reasons"
 
 // ack codes for OP_DATA
 #define ACK_DATA_ASCII '0'
@@ -69,6 +79,14 @@
 // ack codes for OP_CD
 #define ACK_CD_FIND '0'
 #define ACK_CD_OTHER '1'
+
+// error messages for OP_CD ack codes
+#define ACK_CD_OTHER_MSG "the server cannot change directory due to other reasons"
+
+
+#define UNEXPECTED_ERROR_MSG "unexpected behaviour"
+
+
 
 
 /* temp debug function, prints response from server */
@@ -81,18 +99,70 @@ void response(int sd){
 	printf("Sever Output: %c\n",  code);
 }
 
-void send_put(int sd, char *filename2)
+void send_put(int sd, char *filename)
 {
+
+	// open the file
+	int fd;
+	if( (fd = open(filename, O_RDONLY)) == -1){
+		printf("failed to open file: %s\n",filename);
+		return;
+	}
+
+
+/* ---------- */
+	struct stat inf;
+	printf("%s: ", filename);
+	if(fstat(fd, &inf) < 0) {
+		printf("fstat error");
+		return;
+	}
+
+	int bytes = (int)inf.st_size;
+	int blocksize = (int)inf.st_blksize;
+
+	printf("nbytes: %d\n",bytes);
+	printf("blocksize: %d\n",blocksize);
+
+	char buf[FILE_BLOCK_SIZE];
+	int nr = 0;
+	int totalr = 0;
+	int found_null = 0;
+	while((nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
+		for(int i = 0; (i < nr) && (!found_null); i++){
+			// if(buf[i] == '\0'){
+			// 	found_null = 1;
+			// }
+			found_null = buf[i] == '\0';
+		}
+		totalr += nr;
+		if(found_null == 1) break;
+	}
+	if(found_null){
+		printf("FILE IS BINARY\n");
+	}else{
+		printf("FILE IS NOT BINARY\n");
+	}
+
+
+
+
+	return;
+/* ---------- */
+
+
+
+
+
+
+
+
+
 	if( write_code(sd,OP_PUT) == -1){
 		printf("failed to send put");
 		return;
 	}
 
-
-	// open the file
-	// open(token);
-
-	char *filename = "x.txt";
 
 	int filenamelength = strlen(filename);
 
@@ -100,13 +170,13 @@ void send_put(int sd, char *filename2)
 		printf("failed to send length\n");
 		return;
 	}
-	printf("sent length %d\n",filenamelength);
+	printf("sent length %d\n",filenamelength);//debug
 
 	if( write_nbytes(sd,filename,filenamelength) <= 0 ){
 		printf("failed to send filename\n");
 		return;
 	}
-	printf("sent filename %s\n",filename);
+	printf("sent filename %s\n",filename);//debug
 
 
 
@@ -125,8 +195,25 @@ void send_put(int sd, char *filename2)
 	if(read_code(sd,&ackcode) == -1){
 		printf("failed to read ackcode\n");
 	}
-	if(ackcode != ACK_PUT_SUCCESS){
-		printf("print relevant error message\n");
+	switch(ackcode){
+		case ACK_PUT_SUCCESS://continue
+		break;
+		case ACK_PUT_FILENAME:
+			printf("%s\n",ACK_PUT_FILENAME_MSG);
+			return;
+		break;
+		case ACK_PUT_CREATEFILE:
+			printf("%s\n",ACK_PUT_CREATEFILE_MSG);
+			return;
+		break;
+		case ACK_PUT_OTHER:
+			printf("%s\n",ACK_PUT_OTHER_MSG);
+			return;
+		break;
+		default:
+			printf("%s\n",UNEXPECTED_ERROR_MSG);
+			return;
+		break;
 	}
 
 	printf("ackcode processed\n");//debug
@@ -138,7 +225,7 @@ void send_put(int sd, char *filename2)
 	printf("sent OP_DATA\n");//debug
 
 
-	char filetype = ACK_DATA_ASCII;
+	char filetype = ACK_DATA_ASCII; // figure out file type
 
 	if(write_code(sd,filetype) == -1){
 		printf("failed to send ACK_DATA_ASCII\n");
