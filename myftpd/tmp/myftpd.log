@@ -1,0 +1,35 @@
+Thu Nov  2 17:10:14 2017-client 1-Write opcode
+Thu Nov  2 17:10:14 2017-client 1-invalid opcode
+Thu Nov  2 17:10:14 2017-client 1-invalid opcode
+Thu Nov  2 17:10:14 2017-client 1-invalid opcode
+Thu Nov  2 17:10:14 2017-client 1-invalid opcode
+Thu Nov  2 17:10:14 2017-client 1-invalid opcode
+Thu Nov  2 17:10:30 2017-client 1-CD
+Thu Nov  2 17:10:30 2017-client 1-Write opcode
+Thu Nov  2 17:10:30 2017-client 1-Read size
+Thu Nov  2 17:10:30 2017-client 1-sfadf
+Thu Nov  2 17:10:30 2017-client 1-Write opcode
+Thu Nov  2 17:10:30 2017-client 1-invalid opcode
+Thu Nov  2 17:10:30 2017-client 1-invalid opcode
+Thu Nov  2 17:10:30 2017-client 1-invalid opcode
+Thu Nov  2 17:10:48 2017-client 1-PWD
+Thu Nov  2 17:10:48 2017-client 1-Write opcode
+Thu Nov  2 17:10:48 2017-client 1-Write length
+Thu Nov  2 17:10:48 2017-client 1-Write directory
+Thu Nov  2 17:10:54 2017-client 1-CD
+Thu Nov  2 17:10:54 2017-client 1-Write opcode
+Thu Nov  2 17:17:15 2017-client 1-failed to read size
+Thu Nov  2 17:17:15 2017-client 1-disconnected
+Thu Nov  2 17:42:53 2017-client 1-Write opcode
+Thu Nov  2 17:42:53 2017-client 1-invalid opcode
+Thu Nov  2 17:42:53 2017-client 1-invalid opcode
+Thu Nov  2 17:42:53 2017-client 1-invalid opcode
+Thu Nov  2 17:42:53 2017-client 1-invalid opcode
+Thu Nov  2 17:42:53 2017-client 1-invalid opcode
+Thu Nov  2 17:42:57 2017-client 1-PWD
+Thu Nov  2 17:42:57 2017-client 1-Write opcode
+Thu Nov  2 17:42:57 2017-client 1-Write length
+Thu Nov  2 17:42:57 2017-client 1-Write directory
+Thu Nov  2 17:43:00 2017-client 1-CD
+Thu Nov  2 17:43:00 2017-client 1-Read size
+Thu Nov  2 17:43:00 2017-client 1-..

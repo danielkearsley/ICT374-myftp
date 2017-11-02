@@ -1,0 +1,45 @@
+Thu Nov  2 17:17:31 2017-client 1-Write opcode
+Thu Nov  2 17:17:31 2017-client 1-invalid opcode
+Thu Nov  2 17:17:31 2017-client 1-invalid opcode
+Thu Nov  2 17:17:31 2017-client 1-invalid opcode
+Thu Nov  2 17:17:31 2017-client 1-invalid opcode
+Thu Nov  2 17:17:31 2017-client 1-invalid opcode
+Thu Nov  2 17:17:31 2017-client 1-invalid opcode
+Thu Nov  2 17:17:49 2017-client 1-CD
+Thu Nov  2 17:17:49 2017-client 1-Read size
+Thu Nov  2 17:17:49 2017-client 1-tmp
+Thu Nov  2 17:17:49 2017-client 1-Write opcode
+Thu Nov  2 17:17:49 2017-client 1-invalid opcode
+Thu Nov  2 17:17:49 2017-client 1-invalid opcode
+Thu Nov  2 17:17:49 2017-client 1-invalid opcode
+Thu Nov  2 17:17:49 2017-client 1-invalid opcode
+Thu Nov  2 17:17:49 2017-client 1-invalid opcode
+Thu Nov  2 17:17:54 2017-client 1-PWD
+Thu Nov  2 17:17:54 2017-client 1-Write opcode
+Thu Nov  2 17:17:54 2017-client 1-Write length
+Thu Nov  2 17:17:54 2017-client 1-Write directory
+Thu Nov  2 17:18:17 2017-client 1-CD
+Thu Nov  2 17:18:17 2017-client 1-Read size
+Thu Nov  2 17:18:17 2017-client 1-myftpd
+Thu Nov  2 17:30:27 2017-client 1-Write opcode
+Thu Nov  2 17:30:27 2017-client 1-invalid opcode
+Thu Nov  2 17:30:27 2017-client 1-invalid opcode
+Thu Nov  2 17:30:27 2017-client 1-invalid opcode
+Thu Nov  2 17:30:27 2017-client 1-invalid opcode
+Thu Nov  2 17:30:27 2017-client 1-invalid opcode
+Thu Nov  2 17:30:27 2017-client 1-invalid opcode
+Thu Nov  2 17:30:28 2017-client 1-DIR
+Thu Nov  2 17:30:28 2017-client 1-start.
+..
+.git
+.gitignore
+README.md
+myftp
+myftpd
+protocol.txt
+myftpd.log
+
+Thu Nov  2 17:30:28 2017-client 1-Write opcode
+Thu Nov  2 17:30:28 2017-client 1-Write length
+Thu Nov  2 17:30:28 2017-client 1-Write files
+Thu Nov  2 17:31:59 2017-client 1-disconnected

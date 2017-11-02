@@ -77,8 +77,8 @@
 #define ACK_DATA_BIN '1'
 
 // ack codes for OP_CD
-#define ACK_CD_FIND '0'
-#define ACK_CD_OTHER '1'
+#define ACK_CD_SUCCESS '0'
+#define ACK_CD_FIND '1'
 
 // error messages for OP_CD ack codes
 #define ACK_CD_OTHER_MSG "the server cannot change directory due to other reasons"
@@ -293,7 +293,6 @@ void send_pwd(int sd, char *token)
 	char opcode;
 	int filesize;
 
-	printf("%s\n", token);
 	if(write_code(sd,OP_PWD) == -1){
 		printf("Failed to send pwd\n");
 		return;
@@ -305,7 +304,7 @@ void send_pwd(int sd, char *token)
 	}
 
 	if(opcode != OP_PWD){
-		printf("Invalid opcode\n");
+		printf("Invalid opcode:pwd %c\n",opcode);
 		return;
 	}
 
@@ -314,13 +313,14 @@ void send_pwd(int sd, char *token)
 		return;
 	}
 
-	char directory[filesize];
+	char directory[filesize+1];
 
-	if(read_nbytes(sd, directory, sizeof(directory)) == -1){
+	if(read_nbytes(sd, directory, filesize) == -1){
 		printf("Failed to read directory\n");
 		return;
 	}
 
+	directory[filesize] = '\0';
 	printf("%s\n", directory);
 	//response(sd);
 
@@ -341,7 +341,6 @@ void send_dir(int sd, char *token)
 	char opcode;
 	int filesize;
 
-	printf("%s\n", token);
 	if(write_code(sd,OP_DIR) == -1){
 		printf("Failed to send dir\n");
 		return;
@@ -353,7 +352,7 @@ void send_dir(int sd, char *token)
 	}
 
 	if(opcode != OP_DIR){
-		printf("Invalid opcode\n");
+		printf("Invalid opcode: dir %c\n",opcode);
 		return;
 	}
 
@@ -362,12 +361,13 @@ void send_dir(int sd, char *token)
 		return;
 	}
 
-	char directory[filesize];
+	char directory[filesize+1];
 
-	if(read_nbytes(sd, directory, sizeof(directory)) == -1){
+	if(read_nbytes(sd, directory, filesize) == -1){
 		printf("Failed to read directory list\n");
 		return;
 	}
+	directory[filesize] = '\0';
 
 	printf("%s\n", directory);
 
@@ -399,19 +399,8 @@ void send_cd(int sd, char *token)
 	int filesize;
 	int length = strlen(token);
 
-	printf("%s\n", token);
 	if(write_code(sd,OP_CD) == -1){
 		printf("Failed to send cd\n");
-		return;
-	}
-
-	if(read_code(sd,&opcode) == -1){
-		printf("Failed to read opcode\n");
-		return;
-	}
-
-	if(opcode != OP_CD){
-		printf("Invalid opcode\n");
 		return;
 	}
 
@@ -430,7 +419,7 @@ void send_cd(int sd, char *token)
 	}
 
 	if(opcode != OP_CD){
-		printf("Invalid opcode\n");
+		printf("Invalid opcode:cd %c\n",opcode);
 		return;
 	}
 
@@ -439,13 +428,12 @@ void send_cd(int sd, char *token)
 		return;
 	}
 
-	if(ackcode == ACK_CD_FIND){
-		printf("the server cannot find the directory\n");
+	if(ackcode == ACK_CD_SUCCESS){
 		return;
 	}
 
-	if(ackcode == ACK_CD_OTHER){
-		printf("the server cannot change directory due to other reasons\n");
+	if(ackcode == ACK_CD_FIND){
+		printf("the server cannot find the directory\n");
 		return;
 	}
 
@@ -542,6 +530,8 @@ int main(int argc, char* argv[])
 			nr--;
 		}
 		tokenise(buf, tokens);
+
+		printf("input: %s\n",buf);
 
 		if(strcmp(tokens[0],CMD_PUT)==0){
 			send_put(sd, tokens[1]);
