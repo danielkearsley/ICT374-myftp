@@ -135,7 +135,7 @@ void send_put(int sd, char *filename)
 	char ackcode;
 
 
-	char *content = "x file static content\nend";//debug
+	// char *content = "x file static content\nend";//debug
 
 	/*
 		process the file before initiating put protocol
@@ -160,7 +160,7 @@ void send_put(int sd, char *filename)
 	printf("filetype: %c\n",filetype);
 
 
-
+	lseek(fd,0,SEEK_SET);
 
 	/*
 		initiate put protocol
@@ -195,6 +195,7 @@ void send_put(int sd, char *filename)
 	if(read_code(sd,&ackcode) == -1){
 		printf("failed to read ackcode\n");
 	}
+
 	switch(ackcode){
 		case ACK_PUT_SUCCESS://continue
 		break;
@@ -249,7 +250,7 @@ void send_put(int sd, char *filename)
 		}
 		printf("sent %d bytes\n",nr);
 	}
-	printf("sent file content\n");//debug
+	printf("sent file content nr: %d\n",nr);//debug
 
 	// if(write_nbytes(sd,content,filesize) == -1){
 	// 	printf("failed to send file content\n");

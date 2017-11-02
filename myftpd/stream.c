@@ -58,6 +58,8 @@ int readn(int sd, char *buf, int bufsize)
 }
 
 
+
+
 int write_nbytes(int sd, char *buf, int nbytes)
 {
 	int nw = 0;
@@ -74,9 +76,11 @@ int read_nbytes(int sd, char *buf, int nbytes)
 {
 	int nr = 1;
 	int n = 0;
-	for (n=0; n < nbytes && nr > 0; n += nr) {
-		if ((nr = read(sd, buf+n, nbytes-n)) < 0)
+	for (n=0; (n < nbytes) && (nr > 0); n += nr) {
+		if ((nr = read(sd, buf+n, nbytes-n)) < 0){
+			printf("returning nr:%d\n",nr);
 			return (nr);       /* error in reading */
+		}
 	}
 	return (n);
 }
@@ -122,11 +126,10 @@ int read_twobytelength(int sd, int *length)
   if (read(sd, &data, 2) != 2) return (-1);
   short conv = ntohs(data); /* convert to host byte order */
   int t = (int)conv;
-  length = &t;
+  *length = t;
 
 	return 1;
 }
-
 
 int write_fourbytelength(int sd, int length)
 {
@@ -137,13 +140,13 @@ int write_fourbytelength(int sd, int length)
 	return 1;
 }
 
-int read_fourbytelength(int sd, int **length)
+int read_fourbytelength(int sd, int *length)
 {
 	int data = 0;
 
   if (read(sd, &data, 4) != 4) return (-1);
   int conv = ntohl(data); /* convert to host byte order */
-  *length = &conv;
+  *length = conv;
 
 	return 1;
 }

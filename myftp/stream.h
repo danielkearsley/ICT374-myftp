@@ -58,7 +58,7 @@ int read_code(int sd,char *code);
  */
 int write_twobytelength(int sd, int length);
 
-int read_twobytelength(int sd, int **length);
+int read_twobytelength(int sd, int *length);
 
 
 /* Writes a four byte integer from length to socket sd.
@@ -67,7 +67,7 @@ int read_twobytelength(int sd, int **length);
  */
 int write_fourbytelength(int sd, int length);
 
-int read_fourbytelength(int sd, int **length);
+int read_fourbytelength(int sd, int *length);
 
 
 

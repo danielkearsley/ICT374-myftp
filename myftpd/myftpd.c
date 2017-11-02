@@ -13,7 +13,7 @@
  *
  *
  */
-#include <dirent.h> 
+#include <dirent.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -117,7 +117,7 @@ void handle_put(int sd, int cid)
 {
 	logger(cid,"PUT");
 
-	int *filenamelength;
+	int filenamelength;
 	char ackcode;
 	char opcode;
 
@@ -127,18 +127,17 @@ void handle_put(int sd, int cid)
 		logger(cid,"failed to read 2 byte length");
 	}
 
-	int size = (*filenamelength);
-	size+=1;
+	int size = filenamelength + 1;
 	logger(cid,"filename size: %d",size);
 
 	char filename[size];
 	logger(cid,"debug");
 
-	logger(cid,"filename length: %d",*filenamelength);
-	if(read_nbytes(sd,filename,*filenamelength) == -1){
+	logger(cid,"filename length: %d",filenamelength);
+	if(read_nbytes(sd,filename,filenamelength) == -1){
 		logger(cid,"failed to read filename");
 	}
-	filename[*filenamelength] = '\0';
+	filename[filenamelength] = '\0';
 	logger(cid,"filename: %s",filename);
 
 
@@ -183,19 +182,19 @@ void handle_put(int sd, int cid)
 	}
 	logger(cid,"filetype: %c",filetype);
 
-	int *filesize;
+	int filesize;
 
 	if(read_fourbytelength(sd,&filesize) == -1){
 		logger(cid,"failed to read filesize");
 	}
-	logger(cid,"filesize:%d",*filesize);
+	logger(cid,"filesize:%d",filesize);
 
-	char content[(*filesize)+1];
+	char content[filesize+1];
 
-	if(read_nbytes(sd,content,*filesize) == -1){
+	if(read_nbytes(sd,content,filesize) == -1){
 		logger(cid,"failed to read file content");
 	}
-	// content[*filesize] = '\0';
+	content[filesize] = '\0';
 	logger(cid,"content:%s",content);//debug
 
 	//debug - write ack code
@@ -318,7 +317,7 @@ void ShowFiles(char *token){
 	if(token == NULL){
 		token = ".";
 	}
-	FILE *d;
+	DIR *d;
   	struct dirent *dir;
   	d = opendir(token);
 	if (d){
