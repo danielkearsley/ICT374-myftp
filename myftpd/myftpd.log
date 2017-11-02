@@ -1,0 +1,910 @@
+Thu Nov  2 15:53:26 2017-
+server initialised
+Thu Nov  2 15:53:26 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 15:56:55 2017-
+server initialised
+Thu Nov  2 15:56:55 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 15:56:55 2017-myftp server now listening on port 40001
+Thu Nov  2 15:58:13 2017-client 8-connected
+Thu Nov  2 15:58:16 2017-client 8-PWD
+Thu Nov  2 16:00:28 2017-client 8-connection closed
+Thu Nov  2 16:00:34 2017-client 9-connected
+Thu Nov  2 16:00:36 2017-client 9-PWD
+Thu Nov  2 16:00:36 2017-client 9-connection closed
+Thu Nov  2 16:00:49 2017-client 10-connected
+Thu Nov  2 16:00:50 2017-client 10-PWD
+Thu Nov  2 16:02:15 2017-client 10-connection closed
+Thu Nov  2 16:02:47 2017-
+server initialised
+Thu Nov  2 16:02:47 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 16:02:47 2017-myftp server now listening on port 40007
+Thu Nov  2 16:03:00 2017-client 1-connected
+Thu Nov  2 16:03:02 2017-client 1-PWD
+Thu Nov  2 16:03:38 2017-client 1-disconnected
+Thu Nov  2 16:04:29 2017-client 2-connected
+Thu Nov  2 16:04:31 2017-client 2-PWD
+Thu Nov  2 16:04:38 2017-client 2-disconnected
+Thu Nov  2 16:05:07 2017-client 3-connected
+Thu Nov  2 16:05:08 2017-client 3-PWD
+Thu Nov  2 16:05:10 2017-client 3-disconnected
+Thu Nov  2 16:05:26 2017-client 4-connected
+Thu Nov  2 16:05:28 2017-client 4-PWD
+Thu Nov  2 16:05:28 2017-client 4-disconnected
+Thu Nov  2 16:08:31 2017-client 5-connected
+Thu Nov  2 16:08:34 2017-client 5-PWD
+Thu Nov  2 16:10:12 2017-client 5-disconnected
+Thu Nov  2 16:10:35 2017-
+server initialised
+Thu Nov  2 16:10:35 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 16:10:35 2017-myftp server now listening on port 40007
+Thu Nov  2 16:10:39 2017-client 1-connected
+Thu Nov  2 16:10:45 2017-client 1-PWD
+Thu Nov  2 16:10:45 2017-client 1-Write opcode
+Thu Nov  2 16:10:45 2017-client 1-Write length
+Thu Nov  2 16:10:45 2017-client 1-Write directory
+Thu Nov  2 16:11:22 2017-client 1-disconnected
+Thu Nov  2 16:12:45 2017-client 2-connected
+Thu Nov  2 16:12:50 2017-client 2-PWD
+Thu Nov  2 16:12:50 2017-client 2-Write opcode
+Thu Nov  2 16:12:50 2017-client 2-Write length
+Thu Nov  2 16:12:50 2017-client 2-Write directory
+Thu Nov  2 16:27:10 2017-
+server initialised
+Thu Nov  2 16:27:10 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 16:27:28 2017-client 2-disconnected
+Thu Nov  2 16:27:49 2017-
+server initialised
+Thu Nov  2 16:27:49 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 16:27:49 2017-myftp server now listening on port 40007
+Thu Nov  2 16:27:51 2017-client 1-connected
+Thu Nov  2 16:27:54 2017-client 1-DIR
+Thu Nov  2 16:27:54 2017-client 1-Write opcode
+Thu Nov  2 16:27:54 2017-client 1-Write length
+Thu Nov  2 16:27:54 2017-client 1-Write files
+Thu Nov  2 16:28:27 2017-client 1-disconnected
+Thu Nov  2 16:30:20 2017-
+server initialised
+Thu Nov  2 16:30:20 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 16:30:20 2017-myftp server now listening on port 40007
+Thu Nov  2 16:30:22 2017-client 1-connected
+Thu Nov  2 16:30:24 2017-client 1-DIR
+Thu Nov  2 16:30:24 2017-client 1-Write opcode
+Thu Nov  2 16:34:25 2017-
+server initialised
+Thu Nov  2 16:34:25 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 16:34:25 2017-myftp server now listening on port 40007
+Thu Nov  2 16:34:28 2017-client 1-connected
+Thu Nov  2 16:34:30 2017-client 1-DIR
+Thu Nov  2 16:34:30 2017-client 1-Write opcode
+Thu Nov  2 16:34:30 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+myftpd.o
+stream.o
+
+Thu Nov  2 16:34:30 2017-client 1-Write length
+Thu Nov  2 16:34:30 2017-client 1-Write files
+Thu Nov  2 16:34:45 2017-client 1-disconnected
+Thu Nov  2 16:58:42 2017-
+server initialised
+Thu Nov  2 16:58:42 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 16:58:42 2017-myftp server now listening on port 40007
+Thu Nov  2 16:58:44 2017-client 1-connected
+Thu Nov  2 16:59:02 2017-client 1-CD
+Thu Nov  2 16:59:22 2017-client 1-disconnected
+Thu Nov  2 17:01:46 2017-
+server initialised
+Thu Nov  2 17:01:46 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:01:46 2017-myftp server now listening on port 40007
+Thu Nov  2 17:01:47 2017-client 1-connected
+Thu Nov  2 17:01:50 2017-client 1-CD
+Thu Nov  2 17:01:50 2017-client 1-Write opcode
+Thu Nov  2 17:01:50 2017-client 1-invalid opcode
+Thu Nov  2 17:01:50 2017-client 1-invalid opcode
+Thu Nov  2 17:01:50 2017-client 1-invalid opcode
+Thu Nov  2 17:01:50 2017-client 1-invalid opcode
+Thu Nov  2 17:01:50 2017-client 1-invalid opcode
+Thu Nov  2 17:02:36 2017-client 1-disconnected
+Thu Nov  2 17:02:54 2017-
+server initialised
+Thu Nov  2 17:02:54 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:02:54 2017-myftp server now listening on port 40007
+Thu Nov  2 17:02:56 2017-client 1-connected
+Thu Nov  2 17:02:59 2017-client 1-CD
+Thu Nov  2 17:02:59 2017-client 1-Write opcode
+Thu Nov  2 17:02:59 2017-client 1-Write opcode
+Thu Nov  2 17:02:59 2017-client 1-invalid opcode
+Thu Nov  2 17:02:59 2017-client 1-invalid opcode
+Thu Nov  2 17:02:59 2017-client 1-invalid opcode
+Thu Nov  2 17:02:59 2017-client 1-invalid opcode
+Thu Nov  2 17:02:59 2017-client 1-invalid opcode
+Thu Nov  2 17:03:45 2017-client 1-disconnected
+Thu Nov  2 17:04:00 2017-
+server initialised
+Thu Nov  2 17:04:00 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:04:00 2017-myftp server now listening on port 40007
+Thu Nov  2 17:04:02 2017-client 1-connected
+Thu Nov  2 17:04:04 2017-client 1-disconnected
+Thu Nov  2 17:04:10 2017-client 2-connected
+Thu Nov  2 17:04:12 2017-client 2-CD
+Thu Nov  2 17:04:12 2017-client 2-Write opcode
+Thu Nov  2 17:04:12 2017-client 2-tmopÿ
+Thu Nov  2 17:04:12 2017-client 2-Write opcode
+Thu Nov  2 17:04:12 2017-client 2-invalid opcode
+Thu Nov  2 17:04:12 2017-client 2-invalid opcode
+Thu Nov  2 17:04:12 2017-client 2-invalid opcode
+Thu Nov  2 17:04:12 2017-client 2-invalid opcode
+Thu Nov  2 17:04:19 2017-client 2-CD
+Thu Nov  2 17:04:19 2017-client 2-Write opcode
+Thu Nov  2 17:04:19 2017-client 2-tmpPÿ
+Thu Nov  2 17:04:19 2017-client 2-Write opcode
+Thu Nov  2 17:04:19 2017-client 2-invalid opcode
+Thu Nov  2 17:04:19 2017-client 2-invalid opcode
+Thu Nov  2 17:04:19 2017-client 2-invalid opcode
+Thu Nov  2 17:04:19 2017-client 2-invalid opcode
+Thu Nov  2 17:04:19 2017-client 2-invalid opcode
+Thu Nov  2 17:05:02 2017-client 2-disconnected
+Thu Nov  2 17:05:16 2017-
+server initialised
+Thu Nov  2 17:05:16 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:05:16 2017-myftp server now listening on port 40007
+Thu Nov  2 17:05:17 2017-client 1-connected
+Thu Nov  2 17:05:19 2017-client 1-CD
+Thu Nov  2 17:05:19 2017-client 1-Write opcode
+Thu Nov  2 17:05:19 2017-client 1-tmp]ÿ
+Thu Nov  2 17:05:19 2017-client 1-Write opcode
+Thu Nov  2 17:05:19 2017-client 1-invalid opcode
+Thu Nov  2 17:05:20 2017-client 1-invalid opcode
+Thu Nov  2 17:05:20 2017-client 1-invalid opcode
+Thu Nov  2 17:05:20 2017-client 1-invalid opcode
+Thu Nov  2 17:05:20 2017-client 1-invalid opcode
+Thu Nov  2 17:10:00 2017-client 1-disconnected
+Thu Nov  2 17:10:08 2017-
+server initialised
+Thu Nov  2 17:10:08 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:10:08 2017-myftp server now listening on port 40007
+Thu Nov  2 17:10:12 2017-client 1-connected
+Thu Nov  2 17:10:14 2017-client 1-CD
+Thu Nov  2 17:10:14 2017-client 1-Write opcode
+Thu Nov  2 17:10:14 2017-client 1-Read size
+Thu Nov  2 17:10:14 2017-client 1-tmp
+Thu Nov  2 17:17:24 2017-
+server initialised
+Thu Nov  2 17:17:24 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:17:24 2017-myftp server now listening on port 40007
+Thu Nov  2 17:17:25 2017-client 1-connected
+Thu Nov  2 17:17:31 2017-client 1-CD
+Thu Nov  2 17:17:31 2017-client 1-Read size
+Thu Nov  2 17:17:31 2017-client 1-..
+Thu Nov  2 17:18:17 2017-client 1-Write opcode
+Thu Nov  2 17:18:17 2017-client 1-invalid opcode
+Thu Nov  2 17:18:17 2017-client 1-invalid opcode
+Thu Nov  2 17:18:25 2017-client 1-PWD
+Thu Nov  2 17:18:25 2017-client 1-Write opcode
+Thu Nov  2 17:18:25 2017-client 1-Write length
+Thu Nov  2 17:18:25 2017-client 1-Write directory
+Thu Nov  2 17:18:27 2017-client 1-PWD
+Thu Nov  2 17:18:27 2017-client 1-Write opcode
+Thu Nov  2 17:18:27 2017-client 1-Write length
+Thu Nov  2 17:18:27 2017-client 1-Write directory
+Thu Nov  2 17:18:32 2017-client 1-DIR
+Thu Nov  2 17:18:32 2017-client 1-/Volumes/Lexar/MyFTP/ICT374-myftp/myftpd.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:18:32 2017-client 1-Write opcode
+Thu Nov  2 17:18:32 2017-client 1-Write length
+Thu Nov  2 17:18:32 2017-client 1-Write files
+Thu Nov  2 17:18:49 2017-client 1-DIR
+Thu Nov  2 17:18:49 2017-client 1-/Volumes/Lexar/MyFTP/ICT374-myftp/myftpd.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:18:49 2017-client 1-Write opcode
+Thu Nov  2 17:18:49 2017-client 1-Write length
+Thu Nov  2 17:18:49 2017-client 1-Write files
+Thu Nov  2 17:18:57 2017-client 1-DIR
+Thu Nov  2 17:18:57 2017-client 1-/Volumes/Lexar/MyFTP/ICT374-myftp/myftpd.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:18:57 2017-client 1-Write opcode
+Thu Nov  2 17:18:57 2017-client 1-Write length
+Thu Nov  2 17:18:57 2017-client 1-Write files
+Thu Nov  2 17:19:42 2017-client 1-disconnected
+Thu Nov  2 17:19:46 2017-client 2-connected
+Thu Nov  2 17:19:48 2017-client 2-DIR
+Thu Nov  2 17:19:48 2017-client 2-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:19:48 2017-client 2-Write opcode
+Thu Nov  2 17:19:48 2017-client 2-Write length
+Thu Nov  2 17:19:48 2017-client 2-Write files
+Thu Nov  2 17:19:51 2017-client 2-DIR
+Thu Nov  2 17:19:51 2017-client 2-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:19:51 2017-client 2-Write opcode
+Thu Nov  2 17:19:51 2017-client 2-Write length
+Thu Nov  2 17:19:51 2017-client 2-Write files
+Thu Nov  2 17:20:23 2017-client 2-disconnected
+Thu Nov  2 17:24:58 2017-
+server initialised
+Thu Nov  2 17:24:58 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:24:58 2017-myftp server now listening on port 40007
+Thu Nov  2 17:25:01 2017-client 1-connected
+Thu Nov  2 17:25:03 2017-client 1-DIR
+Thu Nov  2 17:25:03 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:25:03 2017-client 1-Write opcode
+Thu Nov  2 17:25:03 2017-client 1-Write length
+Thu Nov  2 17:25:03 2017-client 1-Write files
+Thu Nov  2 17:25:11 2017-client 1-DIR
+Thu Nov  2 17:25:11 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:25:11 2017-client 1-Write opcode
+Thu Nov  2 17:25:11 2017-client 1-Write length
+Thu Nov  2 17:25:11 2017-client 1-Write files
+Thu Nov  2 17:27:14 2017-client 1-disconnected
+Thu Nov  2 17:27:52 2017-
+server initialised
+Thu Nov  2 17:27:52 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:27:52 2017-myftp server now listening on port 40007
+Thu Nov  2 17:27:56 2017-client 1-connected
+Thu Nov  2 17:27:57 2017-client 1-DIR
+Thu Nov  2 17:27:57 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:27:57 2017-client 1-Write opcode
+Thu Nov  2 17:27:57 2017-client 1-Write length
+Thu Nov  2 17:27:57 2017-client 1-Write files
+Thu Nov  2 17:28:04 2017-client 1-DIR
+Thu Nov  2 17:28:04 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:28:04 2017-client 1-Write opcode
+Thu Nov  2 17:28:04 2017-client 1-Write length
+Thu Nov  2 17:28:04 2017-client 1-Write files
+Thu Nov  2 17:29:10 2017-client 1-disconnected
+Thu Nov  2 17:29:36 2017-
+server initialised
+Thu Nov  2 17:29:36 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:29:36 2017-myftp server now listening on port 40007
+Thu Nov  2 17:29:42 2017-client 1-connected
+Thu Nov  2 17:29:44 2017-client 1-DIR
+Thu Nov  2 17:29:44 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:29:44 2017-client 1-Write opcode
+Thu Nov  2 17:29:44 2017-client 1-Write length
+Thu Nov  2 17:29:44 2017-client 1-Write files
+Thu Nov  2 17:29:45 2017-client 1-DIR
+Thu Nov  2 17:29:45 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:29:45 2017-client 1-Write opcode
+Thu Nov  2 17:29:45 2017-client 1-Write length
+Thu Nov  2 17:29:45 2017-client 1-Write files
+Thu Nov  2 17:30:05 2017-client 1-disconnected
+Thu Nov  2 17:30:14 2017-
+server initialised
+Thu Nov  2 17:30:14 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:30:14 2017-myftp server now listening on port 40007
+Thu Nov  2 17:30:17 2017-client 1-connected
+Thu Nov  2 17:30:20 2017-client 1-DIR
+Thu Nov  2 17:30:20 2017-client 1-start.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:30:20 2017-client 1-Write opcode
+Thu Nov  2 17:30:20 2017-client 1-Write length
+Thu Nov  2 17:30:20 2017-client 1-Write files
+Thu Nov  2 17:30:21 2017-client 1-DIR
+Thu Nov  2 17:30:21 2017-client 1-start.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:30:21 2017-client 1-Write opcode
+Thu Nov  2 17:30:21 2017-client 1-Write length
+Thu Nov  2 17:30:21 2017-client 1-Write files
+Thu Nov  2 17:30:27 2017-client 1-CD
+Thu Nov  2 17:30:27 2017-client 1-Read size
+Thu Nov  2 17:30:27 2017-client 1-..
+Thu Nov  2 17:32:13 2017-
+server initialised
+Thu Nov  2 17:32:13 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:32:13 2017-myftp server now listening on port 40007
+Thu Nov  2 17:32:18 2017-client 1-connected
+Thu Nov  2 17:32:20 2017-client 1-DIR
+Thu Nov  2 17:32:20 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:32:20 2017-client 1-Write opcode
+Thu Nov  2 17:32:20 2017-client 1-Write length
+Thu Nov  2 17:32:20 2017-client 1-Write files
+Thu Nov  2 17:32:21 2017-client 1-DIR
+Thu Nov  2 17:32:21 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:32:21 2017-client 1-Write opcode
+Thu Nov  2 17:32:21 2017-client 1-Write length
+Thu Nov  2 17:32:21 2017-client 1-Write files
+Thu Nov  2 17:34:07 2017-client 1-disconnected
+Thu Nov  2 17:34:19 2017-
+server initialised
+Thu Nov  2 17:34:19 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:34:19 2017-myftp server now listening on port 40007
+Thu Nov  2 17:34:27 2017-client 1-connected
+Thu Nov  2 17:34:28 2017-client 1-DIR
+Thu Nov  2 17:34:28 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:34:28 2017-client 1-Write opcode
+Thu Nov  2 17:34:28 2017-client 1-Write length 81
+Thu Nov  2 17:34:28 2017-client 1-Write files
+Thu Nov  2 17:34:28 2017-client 1-op_dir complete
+Thu Nov  2 17:34:30 2017-client 1-DIR
+Thu Nov  2 17:34:30 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:34:30 2017-client 1-Write opcode
+Thu Nov  2 17:34:30 2017-client 1-Write length 81
+Thu Nov  2 17:34:30 2017-client 1-Write files
+Thu Nov  2 17:34:30 2017-client 1-op_dir complete
+Thu Nov  2 17:35:35 2017-client 1-disconnected
+Thu Nov  2 17:35:37 2017-client 2-connected
+Thu Nov  2 17:35:39 2017-client 2-DIR
+Thu Nov  2 17:35:39 2017-client 2-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:35:39 2017-client 2-Write opcode
+Thu Nov  2 17:35:39 2017-client 2-Write length 81
+Thu Nov  2 17:35:39 2017-client 2-Write files
+Thu Nov  2 17:35:39 2017-client 2-op_dir complete
+Thu Nov  2 17:35:39 2017-client 2-DIR
+Thu Nov  2 17:35:39 2017-client 2-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:35:39 2017-client 2-Write opcode
+Thu Nov  2 17:35:39 2017-client 2-Write length 81
+Thu Nov  2 17:35:39 2017-client 2-Write files
+Thu Nov  2 17:35:39 2017-client 2-op_dir complete
+Thu Nov  2 17:36:12 2017-client 2-disconnected
+Thu Nov  2 17:36:18 2017-client 3-connected
+Thu Nov  2 17:36:19 2017-client 3-DIR
+Thu Nov  2 17:36:19 2017-client 3-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:36:19 2017-client 3-Write opcode
+Thu Nov  2 17:36:19 2017-client 3-Write length 81
+Thu Nov  2 17:36:19 2017-client 3-Write files
+Thu Nov  2 17:36:19 2017-client 3-op_dir complete
+Thu Nov  2 17:36:20 2017-client 3-DIR
+Thu Nov  2 17:36:20 2017-client 3-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:36:20 2017-client 3-Write opcode
+Thu Nov  2 17:36:20 2017-client 3-Write length 81
+Thu Nov  2 17:36:20 2017-client 3-Write files
+Thu Nov  2 17:36:20 2017-client 3-op_dir complete
+Thu Nov  2 17:36:47 2017-client 3-disconnected
+Thu Nov  2 17:36:49 2017-client 4-connected
+Thu Nov  2 17:36:51 2017-client 4-DIR
+Thu Nov  2 17:36:51 2017-client 4-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:36:51 2017-client 4-Write opcode
+Thu Nov  2 17:36:51 2017-client 4-Write length 81
+Thu Nov  2 17:36:51 2017-client 4-Write files
+Thu Nov  2 17:36:51 2017-client 4-op_dir complete
+Thu Nov  2 17:36:52 2017-client 4-DIR
+Thu Nov  2 17:36:52 2017-client 4-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:36:52 2017-client 4-Write opcode
+Thu Nov  2 17:36:52 2017-client 4-Write length 81
+Thu Nov  2 17:36:52 2017-client 4-Write files
+Thu Nov  2 17:36:52 2017-client 4-op_dir complete
+Thu Nov  2 17:39:14 2017-client 4-disconnected
+Thu Nov  2 17:39:17 2017-client 5-connected
+Thu Nov  2 17:39:19 2017-client 5-DIR
+Thu Nov  2 17:39:19 2017-client 5-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:39:19 2017-client 5-Write opcode
+Thu Nov  2 17:39:19 2017-client 5-Write length 81
+Thu Nov  2 17:39:19 2017-client 5-Write files
+Thu Nov  2 17:39:19 2017-client 5-op_dir complete
+Thu Nov  2 17:39:22 2017-client 5-DIR
+Thu Nov  2 17:39:22 2017-client 5-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:39:22 2017-client 5-Write opcode
+Thu Nov  2 17:39:22 2017-client 5-Write length 81
+Thu Nov  2 17:39:22 2017-client 5-Write files
+Thu Nov  2 17:39:22 2017-client 5-op_dir complete
+Thu Nov  2 17:40:31 2017-client 5-disconnected
+Thu Nov  2 17:40:51 2017-
+server initialised
+Thu Nov  2 17:40:51 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:40:51 2017-myftp server now listening on port 40007
+Thu Nov  2 17:40:56 2017-client 1-connected
+Thu Nov  2 17:40:58 2017-client 1-DIR
+Thu Nov  2 17:40:58 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:40:58 2017-client 1-Write opcode
+Thu Nov  2 17:40:58 2017-client 1-Write length 81
+Thu Nov  2 17:40:58 2017-client 1-Write files
+Thu Nov  2 17:40:58 2017-client 1-op_dir complete
+Thu Nov  2 17:40:58 2017-client 1-DIR
+Thu Nov  2 17:40:58 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:40:58 2017-client 1-Write opcode
+Thu Nov  2 17:40:58 2017-client 1-Write length 81
+Thu Nov  2 17:40:58 2017-client 1-Write files
+Thu Nov  2 17:40:58 2017-client 1-op_dir complete
+Thu Nov  2 17:41:00 2017-client 1-DIR
+Thu Nov  2 17:41:00 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:41:00 2017-client 1-Write opcode
+Thu Nov  2 17:41:00 2017-client 1-Write length 81
+Thu Nov  2 17:41:00 2017-client 1-Write files
+Thu Nov  2 17:41:00 2017-client 1-op_dir complete
+Thu Nov  2 17:41:37 2017-client 1-PWD
+Thu Nov  2 17:41:37 2017-client 1-Write opcode
+Thu Nov  2 17:41:37 2017-client 1-Write length
+Thu Nov  2 17:41:37 2017-client 1-Write directory
+Thu Nov  2 17:41:39 2017-client 1-PWD
+Thu Nov  2 17:41:39 2017-client 1-Write opcode
+Thu Nov  2 17:41:39 2017-client 1-Write length
+Thu Nov  2 17:41:39 2017-client 1-Write directory
+Thu Nov  2 17:41:46 2017-client 1-PWD
+Thu Nov  2 17:41:46 2017-client 1-Write opcode
+Thu Nov  2 17:41:46 2017-client 1-Write length
+Thu Nov  2 17:41:46 2017-client 1-Write directory
+Thu Nov  2 17:41:48 2017-client 1-PWD
+Thu Nov  2 17:41:48 2017-client 1-Write opcode
+Thu Nov  2 17:41:48 2017-client 1-Write length
+Thu Nov  2 17:41:48 2017-client 1-Write directory
+Thu Nov  2 17:41:50 2017-client 1-PWD
+Thu Nov  2 17:41:50 2017-client 1-Write opcode
+Thu Nov  2 17:41:50 2017-client 1-Write length
+Thu Nov  2 17:41:50 2017-client 1-Write directory
+Thu Nov  2 17:41:52 2017-client 1-PWD
+Thu Nov  2 17:41:52 2017-client 1-Write opcode
+Thu Nov  2 17:41:52 2017-client 1-Write length
+Thu Nov  2 17:41:52 2017-client 1-Write directory
+Thu Nov  2 17:41:55 2017-client 1-PWD
+Thu Nov  2 17:41:55 2017-client 1-Write opcode
+Thu Nov  2 17:41:55 2017-client 1-Write length
+Thu Nov  2 17:41:56 2017-client 1-Write directory
+Thu Nov  2 17:41:57 2017-client 1-PWD
+Thu Nov  2 17:41:57 2017-client 1-Write opcode
+Thu Nov  2 17:41:57 2017-client 1-Write length
+Thu Nov  2 17:41:57 2017-client 1-Write directory
+Thu Nov  2 17:41:58 2017-client 1-PWD
+Thu Nov  2 17:41:58 2017-client 1-Write opcode
+Thu Nov  2 17:41:58 2017-client 1-Write length
+Thu Nov  2 17:41:58 2017-client 1-Write directory
+Thu Nov  2 17:42:03 2017-client 1-disconnected
+Thu Nov  2 17:42:30 2017-
+server initialised
+Thu Nov  2 17:42:30 2017-
+dir set to /Volumes/Lexar/MyFTP/ICT374-myftp/myftpd
+Thu Nov  2 17:42:30 2017-myftp server now listening on port 40007
+Thu Nov  2 17:42:32 2017-client 1-connected
+Thu Nov  2 17:42:35 2017-client 1-PWD
+Thu Nov  2 17:42:35 2017-client 1-Write opcode
+Thu Nov  2 17:42:35 2017-client 1-Write length
+Thu Nov  2 17:42:35 2017-client 1-Write directory
+Thu Nov  2 17:42:36 2017-client 1-PWD
+Thu Nov  2 17:42:36 2017-client 1-Write opcode
+Thu Nov  2 17:42:36 2017-client 1-Write length
+Thu Nov  2 17:42:36 2017-client 1-Write directory
+Thu Nov  2 17:42:38 2017-client 1-PWD
+Thu Nov  2 17:42:38 2017-client 1-Write opcode
+Thu Nov  2 17:42:38 2017-client 1-Write length
+Thu Nov  2 17:42:38 2017-client 1-Write directory
+Thu Nov  2 17:42:39 2017-client 1-PWD
+Thu Nov  2 17:42:39 2017-client 1-Write opcode
+Thu Nov  2 17:42:39 2017-client 1-Write length
+Thu Nov  2 17:42:39 2017-client 1-Write directory
+Thu Nov  2 17:42:40 2017-client 1-PWD
+Thu Nov  2 17:42:40 2017-client 1-Write opcode
+Thu Nov  2 17:42:40 2017-client 1-Write length
+Thu Nov  2 17:42:40 2017-client 1-Write directory
+Thu Nov  2 17:42:41 2017-client 1-PWD
+Thu Nov  2 17:42:41 2017-client 1-Write opcode
+Thu Nov  2 17:42:41 2017-client 1-Write length
+Thu Nov  2 17:42:41 2017-client 1-Write directory
+Thu Nov  2 17:42:42 2017-client 1-PWD
+Thu Nov  2 17:42:42 2017-client 1-Write opcode
+Thu Nov  2 17:42:42 2017-client 1-Write length
+Thu Nov  2 17:42:42 2017-client 1-Write directory
+Thu Nov  2 17:42:43 2017-client 1-PWD
+Thu Nov  2 17:42:43 2017-client 1-Write opcode
+Thu Nov  2 17:42:43 2017-client 1-Write length
+Thu Nov  2 17:42:43 2017-client 1-Write directory
+Thu Nov  2 17:42:53 2017-client 1-CD
+Thu Nov  2 17:42:53 2017-client 1-Read size
+Thu Nov  2 17:42:53 2017-client 1-tmp
+Thu Nov  2 17:43:00 2017-client 1-Write opcode
+Thu Nov  2 17:43:00 2017-client 1-invalid opcode
+Thu Nov  2 17:43:00 2017-client 1-invalid opcode
+Thu Nov  2 17:43:00 2017-client 1-invalid opcode
+Thu Nov  2 17:43:00 2017-client 1-invalid opcode
+Thu Nov  2 17:43:00 2017-client 1-invalid opcode
+Thu Nov  2 17:43:00 2017-client 1-invalid opcode
+Thu Nov  2 17:43:04 2017-client 1-PWD
+Thu Nov  2 17:43:04 2017-client 1-Write opcode
+Thu Nov  2 17:43:04 2017-client 1-Write length
+Thu Nov  2 17:43:04 2017-client 1-Write directory
+Thu Nov  2 17:43:08 2017-client 1-DIR
+Thu Nov  2 17:43:08 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:43:08 2017-client 1-Write opcode
+Thu Nov  2 17:43:08 2017-client 1-Write length 81
+Thu Nov  2 17:43:08 2017-client 1-Write files
+Thu Nov  2 17:43:08 2017-client 1-op_dir complete
+Thu Nov  2 17:43:10 2017-client 1-DIR
+Thu Nov  2 17:43:10 2017-client 1-.
+..
+makefile
+myftpd.c
+stream.c
+stream.h
+myftpd.log
+myftpd
+tmp
+stream.o
+myftpd.o
+
+Thu Nov  2 17:43:10 2017-client 1-Write opcode
+Thu Nov  2 17:43:10 2017-client 1-Write length 81
+Thu Nov  2 17:43:10 2017-client 1-Write files
+Thu Nov  2 17:43:10 2017-client 1-op_dir complete
+Thu Nov  2 17:43:37 2017-client 1-disconnected

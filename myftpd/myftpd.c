@@ -55,8 +55,8 @@
 #define ACK_DATA_BIN '1'
 
 // ack codes for OP_CD
-#define ACK_CD_FIND '0'
-#define ACK_CD_OTHER '1'
+#define ACK_CD_SUCCESS '0'
+#define ACK_CD_FIND '1'
 
 
 
@@ -222,8 +222,32 @@ void handle_get(int sd, int cid)
  */
 void handle_pwd(int sd, int cid)
 {
+	char cwd[1024];
 	logger(cid,"PWD");
-	write_code(sd,ACK_PUT_SUCCESS);
+
+	//Show current directory
+    getcwd(cwd, sizeof(cwd));
+
+    if(write_code(sd,OP_PWD) == -1){
+		logger(cid, "Failed to write opcode");
+		return;
+	}
+
+	logger(cid, "Write opcode");
+
+	if(write_twobytelength(sd, strlen(cwd)) == -1){
+		logger(cid, "Failed to write length");
+		return;
+	}
+
+	logger(cid, "Write length");
+
+	if(write_nbytes(sd, cwd, strlen(cwd)) == -1){
+		logger(cid, "Failed to write directory");
+		return;
+	}
+
+	logger(cid, "Write directory");
 
 }
 
@@ -234,7 +258,44 @@ void handle_pwd(int sd, int cid)
 void handle_dir(int sd, int cid)
 {
 	logger(cid,"DIR");
-	write_code(sd,ACK_PUT_SUCCESS);
+	char files[512];
+
+	strcpy(files,"");
+
+	DIR *d;
+  	struct dirent *dir;
+  	d = opendir(".");
+	if (d){
+    	while ((dir = readdir(d)) != NULL){
+	      strcat(files,dir->d_name);
+	      strcat(files, "\n");
+	    }
+
+	    closedir(d);
+	}
+
+	logger(cid,files);
+
+	if(write_code(sd,OP_DIR) == -1){
+		logger(cid, "Failed to write opcode");
+		return;
+	}
+
+	logger(cid, "Write opcode");
+
+	if(write_fourbytelength(sd, strlen(files)) == -1){
+		logger(cid, "Failed to write length");
+		return;
+	}
+
+	logger(cid, "Write length %d",strlen(files));
+
+	if(write_nbytes(sd, files, strlen(files)) == -1){
+		logger(cid, "Failed to write file list");
+		return;
+	}
+
+	logger(cid, "Write files");
 
 }
 
@@ -245,23 +306,45 @@ void handle_dir(int sd, int cid)
 void handle_cd(int sd, int cid)
 {
 	logger(cid,"CD");
-	write_code(sd,ACK_PUT_SUCCESS);
+	int size;
+	char ackcode;
 
+	if(read_twobytelength(sd,&size) == -1){
+		logger(cid,"failed to read size");
+		return;
+	}
+
+	logger(cid,"Read size");
+
+	char token[size+1];
+
+	if(read_nbytes(sd,token,size) == -1){
+		logger(cid,"failed to read token");
+		return;
+	}
+
+	token [size] = '\0'; 
+
+	logger(cid,token);
+
+	if(chdir(token) == 0){
+		ackcode = ACK_CD_SUCCESS;
+	} else {
+		ackcode = ACK_CD_FIND;
+	}
+
+	if(write_code(sd,OP_CD) == -1){
+		logger(cid, "Failed to send cd");
+		return;
+	}
+
+	logger(cid,"Write opcode");
+
+	if(write_code(sd,ackcode) == -1){
+		logger(cid, "Failed to send ackcode");
+		return;
+	}
 }
-
-/*
- *
- *
- */
-void handle_data(int sd, int cid)
-{
-	logger(cid,"DATA");
-	write_code(sd,ACK_PUT_SUCCESS);
-
-}
-
-
-
 
 /*
  *
@@ -287,12 +370,10 @@ void serve_a_client(int sd,int cid)
 			break;
 			case OP_DIR:
 				handle_dir(sd,cid);
+				logger(cid,"op_dir complete");
 			break;
 			case OP_CD:
 				handle_cd(sd,cid);
-			break;
-			case OP_DATA:
-				handle_data(sd,cid);// not needed here?
 			break;
 			default:
 				logger(cid,"invalid opcode");//invalid :. disregard
@@ -303,35 +384,6 @@ void serve_a_client(int sd,int cid)
 
 	logger(cid,"disconnected");
 	return;
-}
-
-//Show current directory
-void ShowCurDir(){
-	char cwd[1024];
-    getcwd(cwd, sizeof(cwd));
-    printf("%s\n", cwd);
-}
-
-//Show files in elected directory
-void ShowFiles(char *token){
-	if(token == NULL){
-		token = ".";
-	}
-	DIR *d;
-  	struct dirent *dir;
-  	d = opendir(token);
-	if (d){
-    	while ((dir = readdir(d)) != NULL){
-	      printf("%s\n", dir->d_name);
-	    }
-
-	    closedir(d);
-	}
-}
-
-//Change current directory
-void ChangeDir(char *token){
-	chdir(token);
 }
 
 void claim_children()
