@@ -1,5 +1,5 @@
 /**
- * AUTHOR: Clem Davies
+ * AUTHOR: Clem Davies, Daniel Kearsley
  * DATE: 16/10/17
  * FILENAME: myftpd.c
  * DESCRIPTION: The server program for myftp.
@@ -13,7 +13,7 @@
  *
  *
  */
-
+#include <dirent.h> 
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -163,7 +163,34 @@ void serve_a_client(int sd,int cid)
 	return; //connection closed
 }
 
+//Show current directory
+void ShowCurDir(){
+	char cwd[1024];
+    getcwd(cwd, sizeof(cwd));
+    printf("%s\n", cwd);
+}
 
+//Show files in elected directory
+void ShowFiles(char *token){
+	if(token == NULL){
+		token = ".";
+	}
+	FILE *d;
+  	struct dirent *dir;
+  	d = opendir(token);
+	if (d){
+    	while ((dir = readdir(d)) != NULL){
+	      printf("%s\n", dir->d_name);
+	    }
+
+	    closedir(d);
+	}
+}
+
+//Change current directory
+void ChangeDir(char *token){
+	chdir(token);
+}
 
 void claim_children()
 {
