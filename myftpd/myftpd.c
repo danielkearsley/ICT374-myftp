@@ -559,7 +559,7 @@ int main(int argc, char* argv[])
 	desc.cid = 0;
 	desc.sd = 0;
 
-	char init_dir[PATH_MAX] = "";
+	char init_dir[PATH_MAX] = ".";
 	char curr_dir[PATH_MAX] = "";
 
 	/* get current directory */
