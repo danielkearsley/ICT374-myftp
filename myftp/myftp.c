@@ -236,6 +236,8 @@ void send_get(int sd, char *filename)
 				printf("%s\n",UNEXPECTED_ERROR_MSG);
 			break;
 		}
+		close(fd);
+		unlink(filename);
 		return;
 	}
 	/* else file being sent */

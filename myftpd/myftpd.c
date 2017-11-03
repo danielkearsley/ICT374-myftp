@@ -256,6 +256,10 @@ void handle_get(descriptors *desc)
 	if( (fd = open(filename, O_RDONLY)) == -1){
 		ackcode = ACK_GET_FIND;
 		logger(desc,"%s",ACK_GET_FIND_MSG);
+		if(write_code(desc->sd,OP_GET) == -1){
+			logger(desc,"failed to write opcode:%c",OP_GET);
+			return;
+		}
 		if(write_code(desc->sd,ackcode) == -1){
 			logger(desc,"failed to write ackcode:%c",ackcode);
 		}
@@ -266,6 +270,10 @@ void handle_get(descriptors *desc)
 		logger(desc,"fstat error");
 		ackcode = ACK_GET_OTHER;
 		logger(desc,"%s",ACK_GET_OTHER_MSG);
+		if(write_code(desc->sd,OP_GET) == -1){
+			logger(desc,"failed to write opcode:%c",OP_GET);
+			return;
+		}
 		if(write_code(desc->sd,ackcode) == -1){
 			logger(desc,"failed to write ackcode:%c",ackcode);
 		}
