@@ -68,7 +68,7 @@
 typedef struct{
 	int sd;	 /* socket */
 	int cid; /* client id */
-	char logfile[PATH_MAX];  /* absolute log path */
+	char logfile[256];  /* absolute log path */
 } descriptors;
 
 /*
@@ -515,8 +515,8 @@ int main(int argc, char* argv[])
 	desc.cid = 0;
 	desc.sd = 0;
 
-	char init_dir[PATH_MAX] = ".";
-	char curr_dir[PATH_MAX] = "";
+	char init_dir[256] = ".";
+	char curr_dir[256] = "";
 
 	/* get current directory */
 	getcwd(curr_dir,sizeof(curr_dir));

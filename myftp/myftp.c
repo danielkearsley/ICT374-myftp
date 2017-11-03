@@ -324,7 +324,7 @@ void send_pwd(int sd, char *token)
  */
 void display_lpwd()
 {
-	char cwd[PATH_MAX];
+	char cwd[256];
   getcwd(cwd, sizeof(cwd));
   printf("%s\n", cwd);
 }
