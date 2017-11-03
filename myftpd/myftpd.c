@@ -51,10 +51,6 @@
 #define ACK_GET_FIND_MSG "the server cannot find requested file"
 #define ACK_GET_OTHER_MSG "the server cannot send the file due to other reasons"
 
-// ack codes for OP_DATA
-#define ACK_DATA_ASCII '0'
-#define ACK_DATA_BIN '1'
-
 // ack codes for OP_CD
 #define ACK_CD_SUCCESS '0'
 #define ACK_CD_FIND '1'
@@ -120,32 +116,6 @@ void logger(descriptors *d, char* argformat, ... ){
 	close(fd);
 }
 
-/*
- * Looks for a null character in the first block of the file
- * If found the file is binary else ascii.
- * returns ACK_DATA_ASCII or ACK_DATA_BIN
- */
-char find_filetype(int fd)
-{
-	char filetype = ACK_DATA_ASCII;
-
-	char buf[FILE_BLOCK_SIZE];
-	int nr = 0;
-	int totalr = 0;
-	int found_null = 0;
-	int i;
-	while((!found_null) && (nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
-		for(i = 0; (i < nr) && (!found_null); i++){
-			found_null = buf[i] == '\0';
-		}
-		totalr += nr;
-	}
-
-	if(found_null)
-		filetype = ACK_DATA_BIN;
-
-	return filetype;
-}
 
 /*
  * Handles protocol process to send a requested file from the client to the server.
@@ -212,14 +182,7 @@ void handle_put(descriptors *desc)
 		return;
 	}
 
-	char filetype;
 	int filesize;
-
-	/* read filetype code */
-	if(read_code(desc->sd,&filetype) == -1){
-		logger(desc,"failed to read filetype");
-		return;
-	}
 
 	/* read filesize */
 	if(read_fourbytelength(desc->sd,&filesize) == -1){
@@ -268,7 +231,6 @@ void handle_get(descriptors *desc)
 	struct stat inf;
 	int filesize;
 	int filenamelength;
-	char filetype;
 	char ackcode;
 
 
@@ -310,7 +272,6 @@ void handle_get(descriptors *desc)
 	}
 
 	filesize = (int)inf.st_size;
-	filetype = find_filetype(fd);
 
 	/* reset file pointer */
 	lseek(fd,0,SEEK_SET);
@@ -319,11 +280,6 @@ void handle_get(descriptors *desc)
 	/* send the data */
 	if( write_code(desc->sd,OP_DATA) == -1){
 		logger(desc,"failed to send OP_DATA");
-		return;
-	}
-
-	if(write_code(desc->sd,filetype) == -1){
-		logger(desc,"failed to send filetype");
 		return;
 	}
 

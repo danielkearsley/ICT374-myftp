@@ -25,9 +25,6 @@ one byte acknowledgment code which is one of the following ASCII characters:
 Once the client receives the P message from the server and if the acknowledgment code is 0, it responds by sending the following message:
 
 one byte opcode which is the ASCII character D followed by
-one byte format code which is one of the following ASCII characters:
-0 - the file is in ASCII
-1 - the file is in binary
 four-byte integer, N, in two's compliment and in network byte order which represents the length of the file followed by
 a sequence of N bytes which is the content of the file
 
@@ -46,9 +43,6 @@ the sequence of ASCII characters representing the filename
 Once the server receives a message with opcode G, and no error is encountered it responds with the following message:
 
 one byte opcode which is the ASCII character D followed by
-one byte format code which is one of the following ASCII characters:
-0 - the file is in ASCII
-1 - the file is in binary
 four-byte integer, N, in two's compliment and in network byte order which represents the length of the file followed by
 a sequence of N bytes which is the content of the file
 

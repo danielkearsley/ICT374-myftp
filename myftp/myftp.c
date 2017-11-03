@@ -56,10 +56,6 @@
 #define ACK_GET_FIND '0'
 #define ACK_GET_OTHER '1'
 
-/* ack codes for OP_DATA */
-#define ACK_DATA_ASCII '0'
-#define ACK_DATA_BIN '1'
-
 /* ack codes for OP_CD */
 #define ACK_CD_SUCCESS '0'
 #define ACK_CD_FIND '1'
@@ -79,32 +75,6 @@
 #define UNEXPECTED_ERROR_MSG "unexpected behaviour"
 
 
-/*
- * Looks for a null character in the first block of the file
- * If found the file is binary else ascii.
- * returns ACK_DATA_ASCII or ACK_DATA_BIN
- */
-char find_filetype(int fd)
-{
-	char filetype = ACK_DATA_ASCII;
-
-	char buf[FILE_BLOCK_SIZE];
-	int nr = 0;
-	int totalr = 0;
-	int found_null = 0;
-	int i;
-	while((!found_null) && (nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
-		for(i = 0; (i < nr) && (!found_null); i++){
-			found_null = buf[i] == '\0';
-		}
-		totalr += nr;
-	}
-
-	if(found_null)
-		filetype = ACK_DATA_BIN;
-
-	return filetype;
-}
 
 
 /*
@@ -116,7 +86,6 @@ void send_put(int sd, char *filename)
 	struct stat inf;
 	int filesize;
 	int filenamelength = strlen(filename);
-	char filetype;
 
 	char opcode;
 	char ackcode;
@@ -133,7 +102,6 @@ void send_put(int sd, char *filename)
 	}
 
 	filesize = (int)inf.st_size;
-	filetype = find_filetype(fd);
 
 	/* reset file pointer */
 	lseek(fd,0,SEEK_SET);
@@ -192,11 +160,6 @@ void send_put(int sd, char *filename)
 	/* send the data */
 	if( write_code(sd,OP_DATA) == -1){
 		printf("failed to send OP_DATA\n");
-		return;
-	}
-
-	if(write_code(sd,filetype) == -1){
-		printf("failed to send filetype\n");
 		return;
 	}
 
@@ -278,14 +241,8 @@ void send_get(int sd, char *filename)
 	/* else file being sent */
 
 
-	char filetype;
 	int filesize;
 
-	/* read filetype code */
-	if(read_code(sd,&filetype) == -1){
-		printf("failed to read filetype\n");
-		return;
-	}
 
 	/* read filesize */
 	if(read_fourbytelength(sd,&filesize) == -1){
