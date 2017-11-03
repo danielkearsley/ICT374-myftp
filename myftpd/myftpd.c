@@ -1,16 +1,8 @@
 /**
  * AUTHOR: Clem Davies, Daniel Kearsley
- * DATE: 16/10/17
+ * DATE: 3/11/17
  * FILENAME: myftpd.c
  * DESCRIPTION: The server program for myftp.
- *
- * CHANGELOG:
- * CLEM 16/10: Initialised 'hello world' main.
- * CLEM 28/10: Created server daemon that returns what it is sent from a client.
- *
- *
- *
- *
  *
  */
 #include <dirent.h>
@@ -24,7 +16,6 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
-
 #include <fcntl.h>
 #include <time.h>
 #include <stdarg.h>
@@ -47,9 +38,18 @@
 #define ACK_PUT_CREATEFILE '2'
 #define ACK_PUT_OTHER '3'
 
+// error messages for OP_PUT ack codes
+#define ACK_PUT_FILENAME_MSG "the server cannot accept the file as there is a filename clash"
+#define ACK_PUT_CREATEFILE_MSG "the server cannot accept the file because it cannot create the named file"
+#define ACK_PUT_OTHER_MSG "the server cannot accept the file due to other reasons"
+
 // ack codes for OP_GET
 #define ACK_GET_FIND '0'
 #define ACK_GET_OTHER '1'
+
+// error messages for OP_GET ack codes
+#define ACK_GET_FIND_MSG "the server cannot find requested file"
+#define ACK_GET_OTHER_MSG "the server cannot send the file due to other reasons"
 
 // ack codes for OP_DATA
 #define ACK_DATA_ASCII '0'
@@ -60,18 +60,29 @@
 #define ACK_CD_FIND '1'
 
 
+#define UNEXPECTED_ERROR_MSG "unexpected behaviour"
+
+
 
 #define SERV_TCP_PORT   40007   /* default server listening port */
-#define LOGPATH "./myftpd.log"	/* log file */
+#define LOGPATH "/myftpd.log"	/* log file */
 
+
+/* struct for managing socket descriptor, client id and logfile path */
+typedef struct{
+	int sd;	 /* socket */
+	int cid; /* client id */
+	char logfile[PATH_MAX];  /* absolute log path */
+} descriptors;
 
 /*
  * Accepts a client id, formatted output string, and va_list of args.
  * Outputs current time, client id, and passed format string to log file.
  */
-void logger(int cid, char* argformat, ... ){
-	FILE* logfile;
-  if( (logfile = fopen(LOGPATH,"a")) == NULL ){
+void logger(descriptors *d, char* argformat, ... ){
+
+	int fd;
+  if( (fd = open(d->logfile,O_WRONLY | O_APPEND)) == -1 ){
     perror("unable to write to log");
     exit(0);
   }
@@ -82,15 +93,15 @@ void logger(int cid, char* argformat, ... ){
   char timeformat[64];
   char* loggerformat;
   char* cidformat = "client %d-";
-  char cidstring[64];
+  char cidstring[64] = "";
 
   time(&timedata );
   timevalue = localtime ( &timedata );
 	asctime_r(timevalue,timeformat); // string representation of time
 	timeformat[strlen(timeformat)-1] = '-';//replace \n
 
-	if(cid != 0){
- 		sprintf(cidstring,cidformat,cid);
+	if(d->cid != 0){
+ 		sprintf(cidstring,cidformat,d->cid);
 	}
 
   loggerformat = (char*) malloc((strlen(timeformat) + strlen(cidstring) + strlen(argformat) + 2) * sizeof(char) );
@@ -101,96 +112,119 @@ void logger(int cid, char* argformat, ... ){
   strcat(loggerformat,"\n");
 
   va_start(args,argformat); // start the va_list after argformat
-	vfprintf(logfile,loggerformat,args);
+	vdprintf(fd,loggerformat,args);
 	va_end(args); // end the va_list
 
 	free(loggerformat);
 
-	fclose(logfile);
+	close(fd);
 }
 
+/*
+ * Looks for a null character in the first block of the file
+ * If found the file is binary else ascii.
+ * returns ACK_DATA_ASCII or ACK_DATA_BIN
+ */
+char find_filetype(int fd)
+{
+	char filetype = ACK_DATA_ASCII;
+
+	char buf[FILE_BLOCK_SIZE];
+	int nr = 0;
+	int totalr = 0;
+	int found_null = 0;
+	while((!found_null) && (nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
+		for(int i = 0; (i < nr) && (!found_null); i++){
+			found_null = buf[i] == '\0';
+		}
+		totalr += nr;
+	}
+
+	if(found_null)
+		filetype = ACK_DATA_BIN;
+
+	return filetype;
+}
 
 /*
- *
- *
+ * Handles protocol process to send a requested file from the client to the server.
  */
-void handle_put(int sd, int cid)
+void handle_put(descriptors *desc)
 {
-	logger(cid,"PUT");
+	logger(desc,"PUT");
 
 	int filenamelength;
 	char ackcode;
 	char opcode;
+	int fd;
 
-	// finish reading put message
-
-	if( read_twobytelength(sd,&filenamelength) == -1){
-		logger(cid,"failed to read 2 byte length");
+	/* read filename and length */
+	if( read_twobytelength(desc->sd,&filenamelength) == -1){
+		logger(desc,"failed to read 2 byte length");
+		return;
 	}
 
-	int size = filenamelength + 1;
-	logger(cid,"filename size: %d",size);
+	char filename[filenamelength + 1];
 
-	char filename[size];
-	logger(cid,"debug");
-
-	logger(cid,"filename length: %d",filenamelength);
-	if(read_nbytes(sd,filename,filenamelength) == -1){
-		logger(cid,"failed to read filename");
+	if(read_nbytes(desc->sd,filename,filenamelength) == -1){
+		logger(desc,"failed to read filename");
+		return;
 	}
 	filename[filenamelength] = '\0';
-	logger(cid,"filename: %s",filename);
+	logger(desc,"PUT %s",filename);
 
 
 	/* attempt to create file */
 	ackcode = ACK_PUT_SUCCESS;
-	int fd;
 	if( (fd = open(filename,O_RDONLY)) != -1 ){
-		logger(cid,"file exists: %s",filename);
+		logger(desc,"file exists: %s",filename);
 		ackcode = ACK_PUT_FILENAME;
 	}else	if( (fd = open(filename,O_WRONLY | O_CREAT, 0766 )) == -1 ){
-		logger(cid,"cannot create file: %s",filename);
+		logger(desc,"cannot create file: %s",filename);
+		ackcode = ACK_PUT_CREATEFILE;
 	}
 
-	// write acknowledgement
 
-	if( write_code(sd,OP_PUT) == -1){
-		logger(cid,"failed to write OP_PUT");
-	}
-	logger(cid,"returned OP_PUT");
-
-	if(write_code(sd,ackcode) == -1){
-		logger(cid,"failed to write ackcode:%c",ackcode);
-	}
-	logger(cid,"returned ackcode:%c",ackcode);
-
-	if(ackcode != ACK_PUT_SUCCESS){
+	/* write acknowledgement */
+	if( write_code(desc->sd,OP_PUT) == -1 ){
+		logger(desc,"failed to write OP_PUT");
 		return;
 	}
 
-
-	// expect to read data message
-
-	if(read_code(sd,&opcode) == -1){
-		logger(cid,"failed to read code");
+	if(write_code(desc->sd,ackcode) == -1){
+		logger(desc,"failed to write ackcode:%c",ackcode);
+		return;
 	}
+
+	if(ackcode != ACK_PUT_SUCCESS){
+		logger(desc,"PUT completed");
+		return;
+	}
+
+	/* read response from client */
+	if(read_code(desc->sd,&opcode) == -1){
+		logger(desc,"failed to read code");
+	}
+	/* expect to read OP_DATA */
 	if(opcode != OP_DATA){
-		logger(cid,"unexpected opcode:%c, expected: %c",opcode,OP_DATA);
+		logger(desc,"unexpected opcode:%c, expected: %c",opcode,OP_DATA);
 		return;
 	}
 
 	char filetype;
-	if(read_code(sd,&filetype) == -1){
-		logger(cid,"failed to read filetype");
-	}
-	logger(cid,"filetype: %c",filetype);
-
 	int filesize;
 
-	if(read_fourbytelength(sd,&filesize) == -1){
-		logger(cid,"failed to read filesize");
+	/* read filetype code */
+	if(read_code(desc->sd,&filetype) == -1){
+		logger(desc,"failed to read filetype");
+		return;
 	}
-	logger(cid,"filesize:%d",filesize);
+
+	/* read filesize */
+	if(read_fourbytelength(desc->sd,&filesize) == -1){
+		logger(desc,"failed to read filesize");
+		return;
+	}
 
 
 	int block_size = FILE_BLOCK_SIZE;
@@ -200,212 +234,273 @@ void handle_put(int sd, int cid)
 	char filebuffer[block_size];
 	int nr = 0;
 	int nw = 0;
-	int totalr = 0;
 
-
-	int bytes_left = filesize;
-	while(bytes_left > 0){
-		logger(cid,"bytes left: %d",bytes_left);
-		if(block_size > bytes_left){
-			block_size = bytes_left;
+	while(filesize > 0){
+		if(block_size > filesize){
+			block_size = filesize;
 		}
-		nr = read_nbytes(sd,filebuffer,block_size);
+		if( (nr = read_nbytes(desc->sd,filebuffer,block_size)) == -1){
+			logger(desc,"failed to read bytes");
+			close(fd);
+			return;
+		}
 		if( (nw = write(fd,filebuffer,nr)) < nr ){
-			logger(cid,"failed to write %d bytes, wrote %d instead",nr,nw);
+			logger(desc,"failed to write %d bytes, wrote %d bytes instead",nr,nw);
+			close(fd);
+			return;
 		}
-		bytes_left -= nw;
-		logger(cid,"bytes left: %d",bytes_left);
+		filesize -= nw;
 	}
-
-	//debug - write ack code
-	if(write_code(sd,ACK_PUT_SUCCESS) == -1){
-		logger(cid,"failed to write ackcode:%c",ACK_PUT_SUCCESS);
-	}
-	logger(cid,"returned ackcode:%c",ACK_PUT_SUCCESS);
-
+	close(fd);
+	logger(desc,"PUT success");
+	logger(desc,"PUT completed");
 }
 
 /*
- *
- *
+ * Handles protocol process to send a requested file from the server to the client.
  */
-void handle_get(int sd, int cid)
+void handle_get(descriptors *desc)
 {
-	logger(cid,"GET");
-	write_code(sd,ACK_PUT_SUCCESS);
+	logger(desc,"GET");
 
+	int fd;
+	struct stat inf;
+	int filesize;
+	int filenamelength;
+	char filetype;
+	char ackcode;
+
+
+	/* read filename and length */
+	if( read_twobytelength(desc->sd,&filenamelength) == -1){
+		printf("failed to read 2 byte length");
+		return;
+	}
+
+	char filename[filenamelength + 1];
+
+	if(read_nbytes(desc->sd,filename,filenamelength) == -1){
+		printf("failed to read filename");
+		return;
+	}
+	filename[filenamelength] = '\0';
+
+	logger(desc,"GET %s",filename);
+
+
+	/* process the file */
+	if( (fd = open(filename, O_RDONLY)) == -1){
+		ackcode = ACK_GET_FIND;
+		logger(desc,"%s",ACK_GET_FIND_MSG);
+		if(write_code(desc->sd,ackcode)){
+			logger(desc,"failed to write ackcode:%c",ackcode);
+		}
+		return;
+	}
+
+	if(fstat(fd, &inf) < 0) {
+		logger(desc,"fstat error");
+		ackcode = ACK_GET_OTHER;
+		logger(desc,"%s",ACK_GET_OTHER_MSG);
+		if(write_code(desc->sd,ackcode)){
+			logger(desc,"failed to write ackcode:%c",ackcode);
+		}
+		return;
+	}
+
+	filesize = (int)inf.st_size;
+	filetype = find_filetype(fd);
+
+	/* reset file pointer */
+	lseek(fd,0,SEEK_SET);
+
+
+	/* send the data */
+	if( write_code(desc->sd,OP_DATA) == -1){
+		logger(desc,"failed to send OP_DATA");
+		return;
+	}
+
+	if(write_code(desc->sd,filetype) == -1){
+		logger(desc,"failed to send filetype");
+		return;
+	}
+
+	if(write_fourbytelength(desc->sd,filesize) == -1){
+		logger(desc,"failed to send filesize");
+		return;
+	}
+
+	int nr = 0;
+	char buf[FILE_BLOCK_SIZE];
+
+	while((nr = read(fd,buf,FILE_BLOCK_SIZE)) > 0){
+		if ( write_nbytes(desc->sd,buf,nr) == -1){
+			logger(desc,"failed to send file content");
+			return;
+		}
+	}
+	logger(desc,"GET success");
+	logger(desc,"GET complete");
 }
 
 /*
- *
- *
+ * Handles protocol process to display current directory path of server.
  */
-void handle_pwd(int sd, int cid)
+void handle_pwd(descriptors *desc)
 {
+	logger(desc,"PWD");
+
 	char cwd[1024];
-	logger(cid,"PWD");
 
-	//Show current directory
-    getcwd(cwd, sizeof(cwd));
+	getcwd(cwd, sizeof(cwd));
 
-    if(write_code(sd,OP_PWD) == -1){
-		logger(cid, "Failed to write opcode");
+	if(write_code(desc->sd,OP_PWD) == -1){
+		logger(desc, "Failed to write opcode");
 		return;
 	}
 
-	logger(cid, "Write opcode");
-
-	if(write_twobytelength(sd, strlen(cwd)) == -1){
-		logger(cid, "Failed to write length");
+	if(write_twobytelength(desc->sd, strlen(cwd)) == -1){
+		logger(desc, "Failed to write length");
 		return;
 	}
 
-	logger(cid, "Write length");
-
-	if(write_nbytes(sd, cwd, strlen(cwd)) == -1){
-		logger(cid, "Failed to write directory");
+	if(write_nbytes(desc->sd, cwd, strlen(cwd)) == -1){
+		logger(desc, "Failed to write directory");
 		return;
 	}
 
-	logger(cid, "Write directory");
-
+	logger(desc, "PWD complete");
 }
 
 /*
- *
+ * Handles protocol process to display directory listing of the server.
  *
  */
-void handle_dir(int sd, int cid)
+void handle_dir(descriptors *desc)
 {
-	logger(cid,"DIR");
-	char files[512];
+	logger(desc,"DIR");
 
-	strcpy(files,"");
+	char files[1024] = "";
 
-	DIR *d;
-  	struct dirent *dir;
-  	d = opendir(".");
-	if (d){
-    	while ((dir = readdir(d)) != NULL){
-	      strcat(files,dir->d_name);
-	      strcat(files, "\n");
-	    }
-
-	    closedir(d);
+	DIR *dir;
+	struct dirent *ent;
+	dir = opendir(".");
+	if (dir){
+		while ((ent = readdir(dir)) != NULL){
+			strcat(files,ent->d_name);
+			strcat(files, "\n");
+		}
+		files[strlen(files)-1] = '\0';
+		closedir(dir);
+		logger(desc, "DIR success");
 	}
 
-	logger(cid,files);
-
-	if(write_code(sd,OP_DIR) == -1){
-		logger(cid, "Failed to write opcode");
+	if(write_code(desc->sd,OP_DIR) == -1){
+		logger(desc, "Failed to write opcode");
 		return;
 	}
 
-	logger(cid, "Write opcode");
-
-	if(write_fourbytelength(sd, strlen(files)) == -1){
-		logger(cid, "Failed to write length");
+	if(write_fourbytelength(desc->sd, strlen(files)) == -1){
+		logger(desc, "Failed to write length");
 		return;
 	}
 
-	logger(cid, "Write length %d",strlen(files));
-
-	if(write_nbytes(sd, files, strlen(files)) == -1){
-		logger(cid, "Failed to write file list");
+	if(write_nbytes(desc->sd, files, strlen(files)) == -1){
+		logger(desc, "Failed to write file list");
 		return;
 	}
-
-	logger(cid, "Write files");
-
+	logger(desc,"DIR complete");
 }
 
 /*
- *
- *
+ * Handles protocol process to change directory of the server.
  */
-void handle_cd(int sd, int cid)
+void handle_cd(descriptors *desc)
 {
-	logger(cid,"CD");
+	logger(desc,"CD");
+
 	int size;
 	char ackcode;
 
-	if(read_twobytelength(sd,&size) == -1){
-		logger(cid,"failed to read size");
+	if(read_twobytelength(desc->sd,&size) == -1){
+		logger(desc,"failed to read size");
 		return;
 	}
-
-	logger(cid,"Read size");
 
 	char token[size+1];
 
-	if(read_nbytes(sd,token,size) == -1){
-		logger(cid,"failed to read token");
+	if(read_nbytes(desc->sd,token,size) == -1){
+		logger(desc,"failed to read token");
 		return;
 	}
+	token[size] = '\0';
 
-	token [size] = '\0'; 
+	logger(desc,"CD %s",token);
 
-	logger(cid,token);
 
 	if(chdir(token) == 0){
 		ackcode = ACK_CD_SUCCESS;
+		logger(desc,"CD success");
 	} else {
 		ackcode = ACK_CD_FIND;
+		logger(desc,"CD cannot find directory");
 	}
 
-	if(write_code(sd,OP_CD) == -1){
-		logger(cid, "Failed to send cd");
+	if(write_code(desc->sd,OP_CD) == -1){
+		logger(desc, "failed to send cd");
 		return;
 	}
 
-	logger(cid,"Write opcode");
-
-	if(write_code(sd,ackcode) == -1){
-		logger(cid, "Failed to send ackcode");
+	if(write_code(desc->sd,ackcode) == -1){
+		logger(desc, "failed to send ackcode");
 		return;
 	}
+	logger(desc,"CD complete");
 }
 
 /*
- *
- *
+ * Reads a one byte char opcode off socket connection.
+ * Processes opcode recieved.
  */
-void serve_a_client(int sd,int cid)
+void serve_a_client(descriptors *desc)
 {
 	char opcode;
 
-	logger(cid,"connected");
+	logger(desc,"connected");
 
-	while (read_code(sd,&opcode) > 0){
+	while (read_code(desc->sd,&opcode) > 0){
 
 		switch(opcode){
 			case OP_PUT:
-				handle_put(sd,cid);
+				handle_put(desc);
 			break;
 			case OP_GET:
-				handle_get(sd,cid);
+				handle_get(desc);
 			break;
 			case OP_PWD:
-				handle_pwd(sd,cid);
+				handle_pwd(desc);
 			break;
 			case OP_DIR:
-				handle_dir(sd,cid);
-				logger(cid,"op_dir complete");
+				handle_dir(desc);
 			break;
 			case OP_CD:
-				handle_cd(sd,cid);
+				handle_cd(desc);
 			break;
 			default:
-				logger(cid,"invalid opcode");//invalid :. disregard
+				logger(desc,"invalid opcode recieved");//invalid :. disregard
 			break;
 		}// end switch
 
 	}// end while
 
-	logger(cid,"disconnected");
+	logger(desc,"disconnected");
 	return;
 }
 
+/*
+ * Terminates any hanging children processes.
+ */
 void claim_children()
 {
 	pid_t pid=1;
@@ -415,6 +510,10 @@ void claim_children()
 }
 
 
+
+/*
+ * Sets process as daemon.
+ */
 void daemon_init(void)
 {
 	pid_t pid;
@@ -428,19 +527,7 @@ void daemon_init(void)
 		exit(0);
 	}else{
 		/* child */
-		logger(0,"server initialised");
 		setsid();		/* become session leader */
-
-
-		// move chdir outside daemon_init()
-		// set by user from argv in main, or current if not existent
-		char current_dir[128];
-		getcwd(current_dir,sizeof(current_dir));
-		chdir(current_dir);	/* change working directory */
-		logger(0,"dir set to %s",current_dir);
-
-
-
 		umask(0);		/* clear file mode creation mask */
 
 		/* catch SIGCHLD to remove zombies from system */
@@ -448,42 +535,65 @@ void daemon_init(void)
 		sigemptyset(&act.sa_mask);       /* not to block other signals */
 		act.sa_flags   = SA_NOCLDSTOP;   /* not catch stopped children */
 		sigaction(SIGCHLD,(struct sigaction *)&act,(struct sigaction *)0);
+
 	}
 }
 
-
+/*
+ * Creates a myftp server.
+ * num of args) description
+ * 0) current directory is used as server directory.
+ * 1) user supplies directory to use as server directory.
+ * log file is created and appended to in the initial server directory.
+ */
 int main(int argc, char* argv[])
 {
-	int sd, nsd;
+	int nsd;
 	pid_t pid;
-	unsigned short port;   // server listening port
+	unsigned short port = SERV_TCP_PORT; /* server listening port */
 	socklen_t cli_addrlen;
 	struct sockaddr_in ser_addr, cli_addr;
-	int cid = 0; // client session id
+
+	descriptors desc;
+	desc.cid = 0;
+	desc.sd = 0;
+
+	char init_dir[PATH_MAX] = "";
+
+	/* get current directory */
+	getcwd(init_dir,sizeof(init_dir));
 
 
-	/* get the port number */
-	if (argc == 1) {
-		port = SERV_TCP_PORT;
-	} else if (argc == 2) {
-		int n = atoi(argv[1]);
-		if (n >= 1024 && n < 65536){
-			port = n;
-		}else {
-			printf("Error: port number must be between 1024 and 65535\n");
-			exit(1);
-		}
-	} else {
-		printf("Usage: %s [ server listening port ]\n", argv[0]);
+	if( argc > 2 ) {
+		printf("Usage: %s [ initial_current_directory ]\n", argv[0]);
 		exit(1);
 	}
 
-	// make the server a daemon.
+	/* get the initial directory */
+	if (argc == 2) {
+		strcat(init_dir,argv[1]);
+	}
+
+	/* setup absolute path to logfile */
+	strcpy(desc.logfile,init_dir);
+	strcat(desc.logfile,LOGPATH);
+
+	if( chdir(init_dir) == -1 ){
+		printf("Failed to set initial directory to: %s\n",init_dir);
+		exit(1);
+	}
+
+
+	/* make the server a daemon. */
 	daemon_init();
+
+	logger(&desc,"server initialised");
+
+	logger(&desc,"initial dir set to %s",init_dir);
 
 
 	/* set up listening socket sd */
-	if ((sd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+	if ((desc.sd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("server:socket"); exit(1);
 	}
 
@@ -494,24 +604,25 @@ int main(int argc, char* argv[])
 	ser_addr.sin_addr.s_addr = htonl(INADDR_ANY); // any interface
 
 	/* bind server address to socket sd */
-	if (bind(sd, (struct sockaddr *) &ser_addr, sizeof(ser_addr))<0){
+	if (bind(desc.sd, (struct sockaddr *) &ser_addr, sizeof(ser_addr))<0){
 		perror("server bind"); exit(1);
 	}
 
 	/* become a listening socket */
-	listen(sd, 5); // 5 maximum connections can be in queue
-	logger(0,"myftp server now listening on port %hu",port);
+	listen(desc.sd, 5); // 5 maximum connections can be in queue
+	logger(&desc,"myftp server now listening on port %hu",port);
 
 	while (1) {
 		/* wait to accept a client request for connection */
 		cli_addrlen = sizeof(cli_addr);
-		nsd = accept(sd, (struct sockaddr *) &cli_addr, &cli_addrlen);
+		nsd = accept(desc.sd, (struct sockaddr *) &cli_addr, &cli_addrlen);
 		if (nsd < 0) {
 			if (errno == EINTR) continue;/* if interrupted by SIGCHLD */
 			perror("server:accept"); exit(1);
 		}
-		// iterate client id.
-		cid++;
+
+		/* iterate client id before forking */
+		desc.cid++;
 
 		/* create a child process to handle this client */
 		if ((pid=fork()) <0) {
@@ -521,12 +632,10 @@ int main(int argc, char* argv[])
 			continue; /* parent to wait for next client */
 		}else{
 			/* now in child, serve the current client */
-			close(sd);
-			serve_a_client(nsd,cid);
+			close(desc.sd);
+			desc.sd = nsd;
+			serve_a_client(&desc);
 			exit(0);
 		}
 	}
-
-
-
 }

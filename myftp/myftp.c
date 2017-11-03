@@ -1,15 +1,8 @@
 /**
  * AUTHOR: Clem Davies, Daniel Kearsley
- * DATE: 16/10/17
+ * DATE: 3/11/17
  * FILENAME: myftp.c
  * DESCRIPTION: The client program for myftp.
- *
- * CHANGELOG:
- * CLEM 16/10: Initialised 'hello world' main.
- * CLEM 28/10: Created client boiler plate, sets up connection but does nothing.
- *
- *
- *
  *
  */
 
@@ -34,7 +27,7 @@
 #define MAX_CMD_INPUT 64
 #define SERV_TCP_PORT   40007   /* default server listening port */
 
-// client commands available
+/* client commands available */
 #define CMD_PUT  "put"
 #define CMD_GET  "get"
 #define CMD_PWD  "pwd"
@@ -46,7 +39,7 @@
 #define CMD_QUIT "quit"
 #define CMD_HELP "help"
 
-// opcodes
+/* opcodes */
 #define OP_PUT  'P'
 #define OP_GET  'G'
 #define OP_PWD  'A'
@@ -54,52 +47,43 @@
 #define OP_CD   'C'
 #define OP_DATA 'D'
 
-// ack codes for OP_PUT
+/* ack codes for OP_PUT */
 #define ACK_PUT_SUCCESS '0'
 #define ACK_PUT_FILENAME '1'
 #define ACK_PUT_CREATEFILE '2'
-#define ACK_PUT_OTHER '3'
 
-// error messages for OP_PUT ack codes
-#define ACK_PUT_FILENAME_MSG "the server cannot accept the file as there is a filename clash"
-#define ACK_PUT_CREATEFILE_MSG "the server cannot accept the file because it cannot create the named file"
-#define ACK_PUT_OTHER_MSG "the server cannot accept the file due to other reasons"
-
-// ack codes for OP_GET
+/* ack codes for OP_GET */
 #define ACK_GET_FIND '0'
 #define ACK_GET_OTHER '1'
 
-// error messages for OP_GET ack codes
-#define ACK_GET_OTHER_MSG "the server cannot send the file due to other reasons"
-
-// ack codes for OP_DATA
+/* ack codes for OP_DATA */
 #define ACK_DATA_ASCII '0'
 #define ACK_DATA_BIN '1'
 
-// ack codes for OP_CD
+/* ack codes for OP_CD */
 #define ACK_CD_SUCCESS '0'
 #define ACK_CD_FIND '1'
 
-// error messages for OP_CD ack codes
+/* error messages for OP_PUT ack codes */
+#define ACK_PUT_FILENAME_MSG "the server cannot accept the file as there is a filename clash"
+#define ACK_PUT_CREATEFILE_MSG "the server cannot accept the file because it cannot create the named file"
+
+/* error messages for OP_GET ack codes */
+#define ACK_GET_FIND_MSG "the server cannot find requested file"
+#define ACK_GET_OTHER_MSG "the server cannot send the file due to other reasons"
+
+/* error messages for OP_CD ack codes */
 #define ACK_CD_OTHER_MSG "the server cannot change directory due to other reasons"
 
-
+/* other error message */
 #define UNEXPECTED_ERROR_MSG "unexpected behaviour"
 
 
-
-
-/* temp debug function, prints response from server */
-void response(int sd){
-	char code;
-	if( read_code(sd,&code) <= 0){
-		printf("read failed\n");
-		return; //connection closed
-	}
-	printf("Sever Output: %c\n",  code);
-}
-
-
+/*
+ * Looks for a null character in the first block of the file
+ * If found the file is binary else ascii.
+ * returns ACK_DATA_ASCII or ACK_DATA_BIN
+ */
 char find_filetype(int fd)
 {
 	char filetype = ACK_DATA_ASCII;
@@ -109,7 +93,6 @@ char find_filetype(int fd)
 	int totalr = 0;
 	int found_null = 0;
 	while((!found_null) && (nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
-		printf("inside filtype loop. nr: %d\n",nr);
 		for(int i = 0; (i < nr) && (!found_null); i++){
 			found_null = buf[i] == '\0';
 		}
@@ -122,51 +105,42 @@ char find_filetype(int fd)
 	return filetype;
 }
 
+
+/*
+ * Uses myftp protocol to send a file from the server to the client.
+ */
 void send_put(int sd, char *filename)
 {
 	int fd;
 	struct stat inf;
 	int filesize;
-	int blocksize;
 	int filenamelength = strlen(filename);
 	char filetype;
 
 	char opcode;
 	char ackcode;
 
-
-	// char *content = "x file static content\nend";//debug
-
-	/*
-		process the file before initiating put protocol
-	*/
+	/* process the file before initiating put protocol */
 	if( (fd = open(filename, O_RDONLY)) == -1){
 		printf("failed to open file: %s\n",filename);
 		return;
 	}
 
-	printf("%s: ", filename);
 	if(fstat(fd, &inf) < 0) {
 		printf("fstat error\n");
 		return;
 	}
 
 	filesize = (int)inf.st_size;
-	blocksize = (int)inf.st_blksize;//?
 	filetype = find_filetype(fd);
 
-	printf("nbytes: %d\n",filesize); //debug
-	printf("blocksize: %d\n",blocksize); //debug
-	printf("filetype: %c\n",filetype);
-
-
+	/* reset file pointer */
 	lseek(fd,0,SEEK_SET);
 
-	/*
-		initiate put protocol
-	*/
+
+	/* send put */
 	if( write_code(sd,OP_PUT) == -1){
-		printf("failed to send put");
+		printf("failed to send PUT\n");
 		return;
 	}
 
@@ -174,30 +148,30 @@ void send_put(int sd, char *filename)
 		printf("failed to send length\n");
 		return;
 	}
-	printf("sent length %d\n",filenamelength);//debug
 
 	if( write_nbytes(sd,filename,filenamelength) <= 0 ){
 		printf("failed to send filename\n");
 		return;
 	}
-	printf("sent filename %s\n",filename);//debug
 
 
+	/* wait for response */
 	if(read_code(sd,&opcode) == -1){
 		printf("failed to read opcode\n");
+		return;
 	}
 	if(opcode != OP_PUT){
 		printf("unexpected opcode\n");
+		return;
 	}
-	printf("opcode processed\n"); //debug
-
 
 	if(read_code(sd,&ackcode) == -1){
 		printf("failed to read ackcode\n");
+		return;
 	}
 
 	switch(ackcode){
-		case ACK_PUT_SUCCESS://continue
+		case ACK_PUT_SUCCESS: /* continue */
 		break;
 		case ACK_PUT_FILENAME:
 			printf("%s\n",ACK_PUT_FILENAME_MSG);
@@ -207,87 +181,150 @@ void send_put(int sd, char *filename)
 			printf("%s\n",ACK_PUT_CREATEFILE_MSG);
 			return;
 		break;
-		case ACK_PUT_OTHER:
-			printf("%s\n",ACK_PUT_OTHER_MSG);
-			return;
-		break;
 		default:
 			printf("%s\n",UNEXPECTED_ERROR_MSG);
 			return;
 		break;
 	}
 
-	printf("ackcode processed\n");//debug
 
-
+	/* send the data */
 	if( write_code(sd,OP_DATA) == -1){
 		printf("failed to send OP_DATA\n");
+		return;
 	}
-	printf("sent OP_DATA\n");//debug
-
 
 	if(write_code(sd,filetype) == -1){
-		printf("failed to send ACK_DATA_ASCII\n");
+		printf("failed to send filetype\n");
+		return;
 	}
-	printf("sent filetype\n");//debug
-
 
 	if(write_fourbytelength(sd,filesize) == -1){
 		printf("failed to send filesize\n");
+		return;
 	}
-	printf("sent filesize:%d\n",filesize);//debug
-
 
 	int nr = 0;
 	char buf[FILE_BLOCK_SIZE];
-	printf("nead to read and send %d bytes\n",filesize);
 
 	while((nr = read(fd,buf,FILE_BLOCK_SIZE)) > 0){
-			printf("read %d bytes\n",nr);
 		if ( write_nbytes(sd,buf,nr) == -1){
 			printf("failed to send file content\n");
 			return;
 		}
-		printf("sent %d bytes\n",nr);
 	}
-	printf("sent file content nr: %d\n",nr);//debug
-
-	// if(write_nbytes(sd,content,filesize) == -1){
-	// 	printf("failed to send file content\n");
-	// }
-
-	response(sd); // debug
-
-
-
-	// if( write_twobytelength(sd,filenamelength) == -1 ){
-	// 	printf("failed to send filesize\n");
-	// }
-	// if( write_filename(sd,filename,filenamelength) == -1){
-
-	// }
-
-	// read_code(sd,);
-
-	// write_code(sd,OP_DATA);
-
-	// write_code(sd,ACK_DATA_ASCII);
-
-	// write_fourbytelength(sd,filesize);
-
-	// write_file(sd,filedescriptor);
-
-
-	// response(sd);
+	printf("sent file: %s\n",filename);
 }
 
-void send_get(int sd, char *token)
+/*
+ * Uses the myftp protocol to request a file to be sent from the server to the client.
+ */
+void send_get(int sd, char *filename)
 {
-	printf("%s\n", token);
-	write_code(sd,OP_GET);
-	response(sd);
+	int filenamelength = strlen(filename);
+	char ackcode;
+	char opcode;
+	int fd;
+
+
+	/* attempt to create file */
+	if( (fd = open(filename,O_RDONLY)) != -1 ){
+		printf("file exists: %s\n",filename);
+		return;
+	}else	if( (fd = open(filename,O_WRONLY | O_CREAT, 0766 )) == -1 ){
+		printf("cannot create file: %s\n",filename);
+		return;
+	}
+
+	/* send get */
+	if(write_code(sd,OP_GET) == -1){
+		printf("failed to send GET\n");
+		return;
+	}
+	if( write_twobytelength(sd,filenamelength) == -1){
+		printf("failed to send length\n");
+		return;
+	}
+	if( write_nbytes(sd,filename,filenamelength) <= 0 ){
+		printf("failed to send filename\n");
+		return;
+	}
+
+	if( read_code(sd,&opcode) == -1 ){
+		printf("failed to read opcode\n");
+		return;
+	}
+
+	/* error code being sent */
+	if(opcode == OP_GET){
+		if(read_code(sd,&ackcode) == -1){
+			printf("failed to read ackcode\n");
+			return;
+		}
+		switch(ackcode){
+			case ACK_GET_FIND:
+				printf("%s\n",ACK_GET_FIND_MSG);
+			break;
+			case ACK_GET_OTHER:
+				printf("%s\n",ACK_GET_OTHER_MSG);
+			break;
+			default:
+				printf("%s\n",UNEXPECTED_ERROR_MSG);
+			break;
+		}
+		return;
+	}
+	/* else file being sent */
+
+
+	char filetype;
+	int filesize;
+
+	/* read filetype code */
+	if(read_code(sd,&filetype) == -1){
+		printf("failed to read filetype\n");
+		return;
+	}
+
+	/* read filesize */
+	if(read_fourbytelength(sd,&filesize) == -1){
+		printf("failed to read filesize\n");
+		return;
+	}
+
+
+	int block_size = FILE_BLOCK_SIZE;
+	if(FILE_BLOCK_SIZE > filesize){
+		block_size = filesize;
+	}
+	char filebuffer[block_size];
+	int nr = 0;
+	int nw = 0;
+
+	while(filesize > 0){
+		if(block_size > filesize){
+			block_size = filesize;
+		}
+		if( (nr = read_nbytes(sd,filebuffer,block_size)) == -1){
+			printf("failed to read file\n");
+			close(fd);
+			return;
+		}
+		if( (nw = write(fd,filebuffer,nr)) < nr ){
+			printf("failed to write %d bytes, wrote %d bytes instead\n",nr,nw);
+			close(fd);
+			return;
+		}
+		filesize -= nw;
+	}
+
+	close(fd);
+	printf("recieved file: %s\n",filename);
 }
 
+/*
+ * Uses the myftp protocol to print the current directory path of the server.
+ */
 void send_pwd(int sd, char *token)
 {
 	char opcode;
@@ -322,20 +359,21 @@ void send_pwd(int sd, char *token)
 
 	directory[filesize] = '\0';
 	printf("%s\n", directory);
-	//response(sd);
-
 }
 
-//Displays the current local directory
+/*
+ * Prints the current local directory path of the client.
+ */
 void display_lpwd()
 {
-	char cwd[1024];
-    getcwd(cwd, sizeof(cwd));
-    printf("%s\n", cwd);
-	//printf("display local pwd\n");
-
+	char cwd[PATH_MAX];
+  getcwd(cwd, sizeof(cwd));
+  printf("%s\n", cwd);
 }
 
+/*
+ * Uses myftp protocol to print the list of files on the current directory of the server.
+ */
 void send_dir(int sd, char *token)
 {
 	char opcode;
@@ -370,10 +408,11 @@ void send_dir(int sd, char *token)
 	directory[filesize] = '\0';
 
 	printf("%s\n", directory);
-
 }
 
-//Chenges the current local directory
+/*
+ * Prints a list of files in the current directory of the client.
+ */
 void display_ldir(char *token)
 {
 	if(token == NULL){
@@ -392,11 +431,13 @@ void display_ldir(char *token)
 	}
 }
 
+/*
+ * Uses the myftp protocol to change the directory of the server.
+ */
 void send_cd(int sd, char *token)
 {
 	char opcode;
 	char ackcode;
-	int filesize;
 	int length = strlen(token);
 
 	if(write_code(sd,OP_CD) == -1){
@@ -409,8 +450,9 @@ void send_cd(int sd, char *token)
 		return;
 	}
 
-	if(write_nbytes(sd, token, sizeof(token)) == -1){
+	if(write_nbytes(sd, token, strlen(token)) == -1){
 		printf("Failed to write directory name\n");
+		return;
 	}
 
 	if(read_code(sd,&opcode) == -1){
@@ -436,35 +478,52 @@ void send_cd(int sd, char *token)
 		printf("the server cannot find the directory\n");
 		return;
 	}
-
-
 }
 
+/*
+ * Changes the current directory of the client.
+ */
 void display_lcd(char *token)
 {
 	chdir(token);
 }
 
+
+/*
+ * Prints a message stating myftp session has been terminated to the client.
+ */
 void display_quit()
 {
 	printf("Session terminated\n");
 }
 
+
+/*
+ * Prints a list of available commands to the client.
+ */
 void display_help()
 {
 	printf("Commands:\n");
 	printf("put <filename> - send file to server\n");
 	printf("get <filename> - request file from server\n");
-	printf("pwd - display the current directory path on the server\n");
+	printf("pwd  - display the current directory path on the server\n");
 	printf("lpwd - display the current local directory path\n");
-	printf("dir - display current directory listing on the server\n");
+	printf("dir  - display current directory listing on the server\n");
 	printf("ldir - display current local directory listing\n");
-	printf("cd - change current directory on the server\n");
-	printf("lcd - change current local directory\n");
+	printf("cd   - change current directory on the server\n");
+	printf("lcd  - change current local directory\n");
 	printf("quit - terminate session\n");
 	printf("help - display this information\n");
 }
 
+
+/*
+ * Connects to myftp server based on args recieved.
+ * num of args) description
+ * 0) default hostname and port. localhost:40007
+ * 1) user supplies hostname, use default port. ./myftpd hostname
+ * 2) user supplies hostname and port. ./myftpd hostname port
+ */
 int main(int argc, char* argv[])
 {
 	int sd, nr;
@@ -513,14 +572,15 @@ int main(int argc, char* argv[])
 	/* create TCP socket & connect socket to server address */
 	sd = socket(PF_INET, SOCK_STREAM, 0);
 	if (connect(sd, (struct sockaddr *) &ser_addr, sizeof(ser_addr))<0) {
-		perror("client connect"); exit(1);
+		perror("client connect");
+		exit(1);
 	}
 
 
  	char *tokens[2];
 
 	while (1) {
-		printf("> ");
+		printf("> "); /* display prompt */
 
 		/* read user input and tokenise */
 		fgets(buf, sizeof(buf), stdin);
@@ -531,7 +591,6 @@ int main(int argc, char* argv[])
 		}
 		tokenise(buf, tokens);
 
-		printf("input: %s\n",buf);
 
 		if(strcmp(tokens[0],CMD_PUT)==0){
 			send_put(sd, tokens[1]);
@@ -569,6 +628,4 @@ int main(int argc, char* argv[])
 		}
 
 	}
-
-
 }
