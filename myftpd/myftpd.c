@@ -82,36 +82,36 @@ typedef struct{
 void logger(descriptors *d, char* argformat, ... ){
 
 	int fd;
-  if( (fd = open(d->logfile,O_WRONLY | O_APPEND)) == -1 ){
-    perror("unable to write to log");
-    exit(0);
-  }
+	if( (fd = open(d->logfile,O_WRONLY | O_APPEND | O_CREAT,0766)) == -1 ){
+		perror("unable to write to log");
+		exit(0);
+	}
 
 	va_list args;
-  time_t timedata;
-  struct tm * timevalue;
-  char timeformat[64];
-  char* loggerformat;
-  char* cidformat = "client %d-";
-  char cidstring[64] = "";
+	time_t timedata;
+	struct tm * timevalue;
+	char timeformat[64];
+	char* loggerformat;
+	char* cidformat = "client %d-";
+	char cidstring[64] = "";
 
-  time(&timedata );
-  timevalue = localtime ( &timedata );
+	time(&timedata);
+	timevalue = localtime ( &timedata );
 	asctime_r(timevalue,timeformat); // string representation of time
 	timeformat[strlen(timeformat)-1] = '-';//replace \n
 
 	if(d->cid != 0){
- 		sprintf(cidstring,cidformat,d->cid);
+		sprintf(cidstring,cidformat,d->cid);
 	}
 
-  loggerformat = (char*) malloc((strlen(timeformat) + strlen(cidstring) + strlen(argformat) + 2) * sizeof(char) );
+	loggerformat = (char*) malloc((strlen(timeformat) + strlen(cidstring) + strlen(argformat) + 2) * sizeof(char) );
 
-  strcpy(loggerformat,timeformat);
-  strcat(loggerformat,cidstring);
-  strcat(loggerformat,argformat);
-  strcat(loggerformat,"\n");
+	strcpy(loggerformat,timeformat);
+	strcat(loggerformat,cidstring);
+	strcat(loggerformat,argformat);
+	strcat(loggerformat,"\n");
 
-  va_start(args,argformat); // start the va_list after argformat
+	va_start(args,argformat); // start the va_list after argformat
 	vdprintf(fd,loggerformat,args);
 	va_end(args); // end the va_list
 
@@ -133,8 +133,9 @@ char find_filetype(int fd)
 	int nr = 0;
 	int totalr = 0;
 	int found_null = 0;
+	int i;
 	while((!found_null) && (nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
-		for(int i = 0; (i < nr) && (!found_null); i++){
+		for(i = 0; (i < nr) && (!found_null); i++){
 			found_null = buf[i] == '\0';
 		}
 		totalr += nr;
@@ -559,9 +560,10 @@ int main(int argc, char* argv[])
 	desc.sd = 0;
 
 	char init_dir[PATH_MAX] = "";
+	char curr_dir[PATH_MAX] = "";
 
 	/* get current directory */
-	getcwd(init_dir,sizeof(init_dir));
+	getcwd(curr_dir,sizeof(curr_dir));
 
 
 	if( argc > 2 ) {
@@ -574,22 +576,22 @@ int main(int argc, char* argv[])
 		strcat(init_dir,argv[1]);
 	}
 
-	/* setup absolute path to logfile */
-	strcpy(desc.logfile,init_dir);
-	strcat(desc.logfile,LOGPATH);
-
 	if( chdir(init_dir) == -1 ){
 		printf("Failed to set initial directory to: %s\n",init_dir);
 		exit(1);
 	}
 
+	/* setup absolute path to logfile */
+	getcwd(curr_dir,sizeof(curr_dir));
+	strcpy(desc.logfile,curr_dir);
+	strcat(desc.logfile,LOGPATH);
 
 	/* make the server a daemon. */
 	daemon_init();
 
 	logger(&desc,"server initialised");
 
-	logger(&desc,"initial dir set to %s",init_dir);
+	logger(&desc,"initial dir set to %s",curr_dir);
 
 
 	/* set up listening socket sd */

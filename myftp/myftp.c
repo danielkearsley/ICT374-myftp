@@ -92,8 +92,9 @@ char find_filetype(int fd)
 	int nr = 0;
 	int totalr = 0;
 	int found_null = 0;
+	int i;
 	while((!found_null) && (nr = read(fd,buf,FILE_BLOCK_SIZE - totalr)) > 0){
-		for(int i = 0; (i < nr) && (!found_null); i++){
+		for(i = 0; (i < nr) && (!found_null); i++){
 			found_null = buf[i] == '\0';
 		}
 		totalr += nr;
