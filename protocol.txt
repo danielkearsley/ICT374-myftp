@@ -2,7 +2,6 @@
 PROTOCOL SPECIFICATION
 
 
-> put <filename>
 Sending file to server
 
 Client sends one message to the server in the following format:
@@ -29,7 +28,6 @@ a sequence of N bytes which is the content of the file
 
 
 
-> get <filename>
 Receiving file from server
 
 Client sends one message to the server in the following format:
@@ -55,7 +53,6 @@ one byte acknowledgment code which is one of the following ASCII characters:
 
 
 
-> pwd
 Receive the current directory path of the server
 
 Client sends one message to the server in the following format:
@@ -71,7 +68,6 @@ a sequence of N bytes which is the current directory path in ASCII
 
 
 
-> dir
 Receive the current directory list of file names on the server
 
 Client sends one message to the server in the following format:
@@ -87,7 +83,6 @@ a sequence of N bytes which is the current directory listing in ASCII
 
 
 
-> cd
 Change the current directory on the server
 
 Client sends one message to the server in the following format:

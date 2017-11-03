@@ -256,7 +256,7 @@ void handle_get(descriptors *desc)
 	if( (fd = open(filename, O_RDONLY)) == -1){
 		ackcode = ACK_GET_FIND;
 		logger(desc,"%s",ACK_GET_FIND_MSG);
-		if(write_code(desc->sd,ackcode)){
+		if(write_code(desc->sd,ackcode) == -1){
 			logger(desc,"failed to write ackcode:%c",ackcode);
 		}
 		return;
