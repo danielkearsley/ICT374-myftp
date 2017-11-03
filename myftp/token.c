@@ -1,8 +1,9 @@
-// file:		token.c for Week 7
-// author:		HX
-// date:		2006.09.14
-// last modified:	2006.09.21
-// note:		not thoroughlt tested, therefore it may contain errors
+/**
+ * AUTHOR: Clem Davies, Daniel Kearsley
+ * DATE: 3/11/17
+ * FILENAME: token.c
+ * DESCRIPTION: Defines a function to split a string on seperators.
+ */
 
 #include <string.h>
 #include "token.h"
