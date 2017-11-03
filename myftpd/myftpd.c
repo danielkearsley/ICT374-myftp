@@ -573,7 +573,7 @@ int main(int argc, char* argv[])
 
 	/* get the initial directory */
 	if (argc == 2) {
-		strcat(init_dir,argv[1]);
+		strcpy(init_dir,argv[1]);
 	}
 
 	if( chdir(init_dir) == -1 ){
