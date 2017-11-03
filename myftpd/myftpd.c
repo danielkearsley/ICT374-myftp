@@ -266,7 +266,7 @@ void handle_get(descriptors *desc)
 		logger(desc,"fstat error");
 		ackcode = ACK_GET_OTHER;
 		logger(desc,"%s",ACK_GET_OTHER_MSG);
-		if(write_code(desc->sd,ackcode)){
+		if(write_code(desc->sd,ackcode) == -1){
 			logger(desc,"failed to write ackcode:%c",ackcode);
 		}
 		return;
