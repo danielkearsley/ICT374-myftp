@@ -19,7 +19,6 @@ one byte acknowledgment code which is one of the following ASCII characters:
 0 - the server is ready to accept the named file
 1 - the server cannot accept the file as there is a filename clash
 2 - the server cannot accept the file because it cannot create the named file
-3 - the server cannot accept the file due to other reasons
 
 
 Once the client receives the P message from the server and if the acknowledgment code is 0, it responds by sending the following message:
@@ -104,5 +103,3 @@ one byte opcode which is ASCII character C followed by
 one byte acknowledgment code which is one of the following ASCII characters:
 0 - the server changed directory succussfully
 1 - the server cannot find the directory
-2 - the server cannot change directory due to other reasons
-
